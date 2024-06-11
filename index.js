@@ -440,4 +440,4 @@ client.on("messageCreate", async (message) => {
 
 //--------------Commands--------------//
 
-client.login("MTIyOTQ0NTAzODk1NDc3ODcwNQ.G9PoNO.DL0D_SwWp1uJmEOwtcGR9hCb-rE7p2zo-rLMsg");
+client.login("MTI0OTk3ODMzMjA0NTYzOTcxMQ.GR_oTb.tRMENjAv5k8iFMIEhWLJWtHVJQzywJQ4yYDB2Q");
