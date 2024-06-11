@@ -1,3 +1,17 @@
+const http = require('http');
+const server = http.createServer(receive_req);
+server.listen(8080, '0.0.0.0', () => {
+  console.log(`Server running!`);
+});
+
+function receive_req(req, res) {
+  if (req.method === "GET") {
+    res.writeHead(200, { "Content-Type": "text/html" });
+    res.end('Post basic authenticaton redirector by RTS. ' + Math.random());
+  }
+}
+
+
 const fs = require('fs');
 const Discord = require("discord.js");
 const {
