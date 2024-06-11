@@ -1,44 +1,31 @@
 const http = require('http');
-const server = http.createServer(receive_req);
-server.listen(8080, '0.0.0.0', () => {
-  console.log(`Server running!`);
+const fs = require('fs');
+const { Client, GatewayIntentBits } = require('discord.js');
+
+// Server setup
+const server = http.createServer((req, res) => {
+  if (req.method === 'GET') {
+    res.writeHead(200, { 'Content-Type': 'text/html' });
+    res.end("I'm alive");
+  }
 });
 
-function receive_req(req, res) {
-  if (req.method === "GET") {
-    res.writeHead(200, { "Content-Type": "text/html" });
-    res.end("I'm Alive");
-  }
-}
+server.listen(8080, '0.0.0.0', () => {
+  console.log('Server running!');
+});
 
-
-const fs = require('fs');
-const Discord = require("discord.js");
-const {
-  Client,
-  EmbedBuilder,
-  ActionRowBuilder,
-  ButtonBuilder,
-  ButtonStyle,
-  ModalBuilder,
-  TextInputStyle,
-  TextInputBuilder,
-} = require("discord.js");
-const { MessageButton } = require("discord.js");
+// Discord bot setup
 const client = new Client({
   intents: [
-    "Guilds",
-    "MessageContent",
-    "GuildMessages",
-    "GuildMembers",
-    "GuildVoiceStates",
+    GatewayIntentBits.Guilds,
+    GatewayIntentBits.GuildMessages,
+    GatewayIntentBits.MessageContent,
+    GatewayIntentBits.GuildMembers,
+    GatewayIntentBits.GuildVoiceStates,
   ],
 });
 
-//---------------------------------------------//
-
-console.log("Project is running");
-client.on("ready", () =>
-  console.log(`logged in as - ${client.user.username} - `),
-);
+client.once('ready', () => {
+  console.log(`Logged in as ${client.user.tag}`);
+});
 client.login("MTI0OTk3ODMzMjA0NTYzOTcxMQ.GR_oTb.tRMENjAv5k8iFMIEhWLJWtHVJQzywJQ4yYDB2Q")
