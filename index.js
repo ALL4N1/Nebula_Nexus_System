@@ -1,4 +1,21 @@
+const http = require('http');
 const fs = require('fs');
+
+const port = process.env.PORT || 8080;
+const server = http.createServer((req, res) => {
+  if (req.method === 'GET') {
+    res.writeHead(200, { 'Content-Type': 'text/html' });
+    res.end("I'm alive");
+  } else {
+    res.writeHead(405, { 'Content-Type': 'text/html' });
+    res.end("Method Not Allowed");
+  }
+});
+
+server.listen(port, '0.0.0.0', () => {
+  console.log(`Server running on port ${port}`);
+});
+
 const Discord = require("discord.js");
 const {
   Client,
@@ -9,15 +26,16 @@ const {
   ModalBuilder,
   TextInputStyle,
   TextInputBuilder,
+  GatewayIntentBits,
 } = require("discord.js");
 const { MessageButton } = require("discord.js");
 const client = new Client({
   intents: [
-    "Guilds",
-    "MessageContent",
-    "GuildMessages",
-    "GuildMembers",
-    "GuildVoiceStates",
+    GatewayIntentBits.Guilds,
+    GatewayIntentBits.GuildMessages,
+    GatewayIntentBits.MessageContent,
+    GatewayIntentBits.GuildMembers,
+    GatewayIntentBits.GuildVoiceStates,
   ],
 });
 
@@ -41,7 +59,7 @@ const {
   REPORT_WAIT,
   REPORT_VOICES,
 } = require("./config.json");
-const { Console } = require("console");
+
 
 //---------------------------------------------//
 
