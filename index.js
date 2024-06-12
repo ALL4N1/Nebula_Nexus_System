@@ -1,17 +1,3 @@
-const http = require('http');
-const server = http.createServer(receive_req);
-server.listen(8080, '0.0.0.0', () => {
-  console.log(`Server running!`);
-});
-
-function receive_req(req, res) {
-  if (req.method === "GET") {
-    res.writeHead(200, { "Content-Type": "text/html" });
-    res.end('Post basic authenticaton redirector by RTS. ' + Math.random());
-  }
-}
-
-
 const fs = require('fs');
 const Discord = require("discord.js");
 const {
@@ -36,20 +22,24 @@ const client = new Client({
 });
 
 const {
-  CHANNEL_ID,
-  ROLE_ID,
-  VOICE_CHANNEL_IDS,
-  NEW_ROLE_ID,
-  STAFF_ROLE_ID,
   SUGGESTION,
   CHANGE,
-  VERIFLOGS,
+  VERIF_PERMISSION,
+  GATE_VISA,
+  VOICE_GATES,
+  VERIF_LOGS,
+  VISITOR,
+  CITIZEN,
   BOY,
   GIRL,
-  BLACKLIST,
-  REPORT,
   ADULT_ROLE,
   MINOR_ROLE,
+  BLACKLIST,
+  REPORT_MENTION,
+  REPORT_PERMISSION,
+  REPORT_LOGS,
+  REPORT_WAIT,
+  REPORT_VOICES,
 } = require("./config.json");
 const { Console } = require("console");
 
@@ -68,38 +58,65 @@ client.on("messageCreate", async (message) => {
 
   if (message.author.bot) return;
 
-  //----------Change Name-------//
+//----------Change Name-------//
 
-  if (message.channelId === CHANGE) {
-    if (message.content.toLowerCase() === "reset") {d
-      try {
-        await message.member.setNickname(Null);
-        message.react("✅");
-        console.log("Name Changed");
-      } catch (error) {
-        console.error(error);
-        message.react("❎");
-        console.log("Name Not Changed");
+if (message.channelId === CHANGE) {
+  if (message.content.toLowerCase() === "reset") {
+    try {
+
+      await message.member.setNickname(null);
+      const name = message.member.nickname || message.member.user.username;
+
+      const data = fs.readFileSync('Clan.txt', 'utf8');
+      const clanData = data.split('\n').map(line => line.split('/'));
+      const clanRole = clanData.find(([clanId, clanTag]) => message.member.roles.cache.has(clanId));
+
+      if (clanRole) {
+        const [, clanTag] = clanRole;
+        await message.member.setNickname(`${clanTag} | ${name}`);
+        console.log("Name Changed with Clan Tag");
+      } else {
+        await message.member.setNickname(`𝗗𝗞 | ${name}`);
+        console.log("Name Changed with Server Tag");
       }
-    } else {
-      try {
-        await message.member.setNickname("𝗗𝗞 | " + message.content);
-        message.react("✅");
-        console.log("Name Changed");
-      } catch (error) {
-        console.error(error);
-        message.react("❎");
-        console.log("Name Not Changed");
+
+      message.react("✅");
+      console.log("Name Changed");
+    } catch (error) {
+      console.error(error);
+      message.react("❎");
+      console.log("Name Not Changed");
+    }
+  } else {
+    try {
+      const data = fs.readFileSync('Clan.txt', 'utf8');
+      const clanData = data.split('\n').map(line => line.split('/'));
+      const clanRole = clanData.find(([clanId, clanTag]) => message.member.roles.cache.has(clanId));
+      if (clanRole) {
+        const [, clanTag] = clanRole;
+        await message.member.setNickname(`${clanTag} | ${message.content}`);
+        console.log("Name Changed with Clan Tag");
+      } else {
+        await message.member.setNickname(`𝗗𝗞 | ${message.content}`);
+        console.log("Name Changed with Server Tag");
       }
+
+      message.react("✅");
+    } catch (error) {
+      console.error(error);
+      message.react("❎");
+      console.log("Name Not Changed");
     }
   }
-  //----------Change Name-------//
+}
+//----------Change Name-------//
+
 
   //----------Suggestion-------//
 
   const suggestion = message.content;
   if (message.channelId === SUGGESTION) {
-    message.delete(); // Delete the original message
+    message.delete();
 
     const suggestionEmbed = new EmbedBuilder()
       .setColor("#0099ff")
@@ -136,7 +153,7 @@ client.on("messageCreate", async (message) => {
     const args = message.content.slice(prefix.length).trim().split(/ +/);
     const command = args.shift().toLowerCase();
 
-    if(!(message.member.roles.cache.has(REPORT))){
+    if(!(message.member.roles.cache.has(REPORT_PERMISSION))){
       message.delete();
     }
       //----------Warn-------//
@@ -242,27 +259,27 @@ client.on("messageCreate", async (message) => {
 
 //----------Verification-------//
 
-const claims = new Map(); // To store claims
+const claims = new Map();
 
 client.on("voiceStateUpdate", (oldState, newState) => {
   const member = newState.member;
 
   if (
-    (member.roles.cache.has(ROLE_ID) ||
-      member.roles.cache.has(STAFF_ROLE_ID)) &&
+    (member.roles.cache.has(VISITOR) ||
+      member.roles.cache.has(VERIF_PERMISSION)) &&
     newState.channel &&
-    VOICE_CHANNEL_IDS.includes(newState.channel.id)
+    VOICE_GATES.includes(newState.channel.id)
   ) {
-    const logs = member.guild.channels.cache.get(VERIFLOGS);
+    const logs = member.guild.channels.cache.get(VERIF_LOGS);
     logs.send("<@" + member.id + "> d5al lel room <#" + newState.channel.id + ">",);
   }
 
   if (
-    member.roles.cache.has(ROLE_ID) &&
+    member.roles.cache.has(VISITOR) &&
     newState.channel &&
-    VOICE_CHANNEL_IDS.includes(newState.channel.id)
+    VOICE_GATES.includes(newState.channel.id)
   ) {
-    const textChannel = member.guild.channels.cache.get(CHANNEL_ID);
+    const textChannel = member.guild.channels.cache.get(GATE_VISA);
     if (textChannel) {
       const claimEmbed = new EmbedBuilder()
         .setColor("#3c204b")
@@ -279,7 +296,7 @@ client.on("voiceStateUpdate", (oldState, newState) => {
       console.log("Fama chkoun d5al lel verify room")
 
       textChannel.send({
-        content: "<@&" + STAFF_ROLE_ID + "> (<@" + member.id + ">)",
+        content: "<@&" + VERIF_PERMISSION + "> (<@" + member.id + ">)",
         embeds: [claimEmbed],
         components: [claimRow],
       });
@@ -299,7 +316,7 @@ client.on("interactionCreate", async (interaction) => {
 
     if (!member) return;
 
-    if (interaction.member.roles.cache.has(STAFF_ROLE_ID)) {
+    if (interaction.member.roles.cache.has(VERIF_PERMISSION)) {
       claims.set(memberId, interaction.member.id);
 
       const verificationEmbed = new EmbedBuilder()
@@ -312,7 +329,7 @@ client.on("interactionCreate", async (interaction) => {
       const roleRow = new ActionRowBuilder().addComponents(
         new ButtonBuilder()
           .setCustomId(`verif_${member.id}_boy`)
-          .setLabel("Click To V/erify")
+          .setLabel("Click To Verify")
           .setStyle("Primary"),
 
         new ButtonBuilder()
@@ -323,7 +340,7 @@ client.on("interactionCreate", async (interaction) => {
 
       
       await interaction.update({
-        content: "<@&" + STAFF_ROLE_ID + "> (<@" + member.id + ">)",
+        content: "<@&" + VERIF_PERMISSION + "> (<@" + member.id + ">)",
         embeds: [verificationEmbed],
         components: [roleRow],
       });
@@ -341,30 +358,30 @@ client.on("interactionCreate", async (interaction) => {
 
     if (!member) return;
 
-    // Check if the interaction member is the one who claimed and if they are in the same voice channel as the member
+    
     const claimerId = claims.get(memberId);
     if (
       interaction.member.id === claimerId &&
       interaction.member.voice.channelId === member.voice.channelId &&
-      member.roles.cache.has(ROLE_ID) // Verify only if the member has the old role
+      member.roles.cache.has(VISITOR)
     ) {
       let message;
 
       switch (option) {
         case "boy":
-          await member.roles.add(NEW_ROLE_ID);
-          await member.roles.remove(ROLE_ID);
-          message = "Boy";
+          await member.roles.add(CITIZEN);
+          await member.roles.remove(VISITOR);
+          message = "Verified";
           break;        
 
         case "blacklist":
           await member.roles.add(BLACKLIST);
-          await member.roles.remove(ROLE_ID);
+          await member.roles.remove(VISITOR);
           message = "Blacklist";
           break;
       }
 
-      const logs = interaction.guild.channels.cache.get(VERIFLOGS);
+      const logs = interaction.guild.channels.cache.get(VERIF_LOGS);
       logs.send(
         "<@" + interaction.member.id + "> 3mal verification w el target : <@" + member.id + "> Role : (" + message + ")",
       );
@@ -372,7 +389,7 @@ client.on("interactionCreate", async (interaction) => {
         content: `Verification result: Role Updated for <@${memberId}> (${message}).`,
         ephemeral: true,
       });
-      const chatChannel = interaction.guild.channels.cache.get(CHANNEL_ID);
+      const chatChannel = interaction.guild.channels.cache.get(GATE_VISA);
       if (chatChannel) {
         chatChannel.send(
           `Verification result: Role Updated for <@${memberId}> (${message}).`,
@@ -391,6 +408,51 @@ client.on("interactionCreate", async (interaction) => {
 });
 
   //----------Verification-------//
+
+  //----------Report-------//
+  client.on("voiceStateUpdate", (oldState, newState) => {
+    const member = newState.member;
+    
+    if (member.roles.cache.has(REPORT_PERMISSION) &&
+      newState.channel &&
+      (REPORT_WAIT.includes(newState.channel.id) || REPORT_VOICES.includes(newState.channel.id))
+    ) {
+      const logs = member.guild.channels.cache.get(REPORT_LOGS);
+      logs.send("Staff <@" + member.id + "> d5al lel room <#" + newState.channel.id + ">",);
+    }
+
+    else if (member.roles.cache.has(CITIZEN) &&
+      newState.channel &&
+      (REPORT_WAIT.includes(newState.channel.id) || REPORT_VOICES.includes(newState.channel.id))
+    ) {
+      const logs = member.guild.channels.cache.get(REPORT_LOGS);
+      logs.send("<@" + member.id + "> d5al lel room <#" + newState.channel.id + ">",);
+    }
+  
+    if (
+      member.roles.cache.has(CITIZEN) &&
+      newState.channel &&
+      REPORT_WAIT.includes(newState.channel.id)
+    ) {
+      const textChannel = member.guild.channels.cache.get(REPORT_MENTION);
+      if (textChannel) {
+        const ReportEmbed = new EmbedBuilder()
+          .setColor("#3c204b")
+          .setTitle("REPORT MENTION")
+          .setDescription(`Check Waiting For Report Room.`);
+  
+        console.log("Fama chkoun d5al lel report room")
+  
+        textChannel.send({
+          content: "<@&" + REPORT_PERMISSION + "> (<@" + member.id + ">)",
+          embeds: [ReportEmbed],
+        });
+  
+      }
+    }
+  });
+  
+  //----------Report-------//
 
 //--------------Commands--------------//
 
@@ -440,4 +502,4 @@ client.on("messageCreate", async (message) => {
 
 //--------------Commands--------------//
 
-client.login("MTI0OTk3ODMzMjA0NTYzOTcxMQ.GR_oTb.tRMENjAv5k8iFMIEhWLJWtHVJQzywJQ4yYDB2Q");
+client.login(process.env.TOKEN);
