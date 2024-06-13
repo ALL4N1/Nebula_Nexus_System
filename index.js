@@ -58,8 +58,9 @@ const {
   REPORT_LOGS,
   REPORT_WAIT,
   REPORT_VOICES,
+  STARS,
 } = require("./config.json");
-
+const { Console } = require("console");
 
 //---------------------------------------------//
 
@@ -70,7 +71,12 @@ client.on("ready", () =>
 
 client.on("messageCreate", async (message) => {
   if (message.content.toLowerCase().includes("slm")) {
-    message.channel.send("Mar7ba");
+    message.reply("Mar7ba");
+    console.log("slm");
+  }
+
+  if (message.content.toLowerCase().includes("a7la nass")) {
+    message.reply("3aychou L7ob");
     console.log("slm");
   }
 
@@ -129,6 +135,15 @@ if (message.channelId === CHANGE) {
 }
 //----------Change Name-------//
 
+  //----------Stars-------//
+  
+    if (STARS.includes(message.channel.id)) {
+      message.react("⭐")
+      console.log("Star Has Been Add");
+    }
+  
+
+  //----------Stars-------//
 
   //----------Suggestion-------//
 
