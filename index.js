@@ -301,7 +301,8 @@ client.on("voiceStateUpdate", (oldState, newState) => {
     (member.roles.cache.has(VISITOR) ||
       member.roles.cache.has(VERIF_PERMISSION)) &&
     newState.channel &&
-    VOICE_GATES.includes(newState.channel.id)
+    VOICE_GATES.includes(newState.channel.id) &&
+    (!oldState.channelId || oldState.channelId !== newState.channelId)
   ) {
     const logs = member.guild.channels.cache.get(VERIF_LOGS);
     logs.send("<@" + member.id + "> d5al lel room <#" + newState.channel.id + ">",);
@@ -310,14 +311,15 @@ client.on("voiceStateUpdate", (oldState, newState) => {
   if (
     member.roles.cache.has(VISITOR) &&
     newState.channel &&
-    VOICE_GATES.includes(newState.channel.id)
+    VOICE_GATES.includes(newState.channel.id) &&
+    (!oldState.channelId || oldState.channelId !== newState.channelId)
   ) {
     const textChannel = member.guild.channels.cache.get(GATE_VISA);
     if (textChannel) {
       const claimEmbed = new EmbedBuilder()
         .setColor("#3c204b")
         .setTitle("Verification Claim")
-        .setDescription(`Claim before you join the room.`);
+        .setDescription(`Claim Before You Join The Verification.`);
 
       const claimRow = new ActionRowBuilder().addComponents(
         new ButtonBuilder()
@@ -448,7 +450,11 @@ client.on("interactionCreate", async (interaction) => {
     
     if (member.roles.cache.has(REPORT_PERMISSION) &&
       newState.channel &&
-      (REPORT_WAIT.includes(newState.channel.id) || REPORT_VOICES.includes(newState.channel.id))
+      
+      (
+        REPORT_WAIT.includes(newState.channel.id) && (!oldState.channelId || oldState.channelId !== newState.channelId) || 
+        REPORT_VOICES.includes(newState.channel.id) && (!oldState.channelId || oldState.channelId !== newState.channelId)
+      )
     ) {
       const logs = member.guild.channels.cache.get(REPORT_LOGS);
       logs.send("Staff <@" + member.id + "> d5al lel room <#" + newState.channel.id + ">",);
@@ -456,7 +462,10 @@ client.on("interactionCreate", async (interaction) => {
 
     else if (member.roles.cache.has(CITIZEN) &&
       newState.channel &&
-      (REPORT_WAIT.includes(newState.channel.id) || REPORT_VOICES.includes(newState.channel.id))
+      (
+        REPORT_WAIT.includes(newState.channel.id) && (!oldState.channelId || oldState.channelId !== newState.channelId) || 
+        REPORT_VOICES.includes(newState.channel.id) && (!oldState.channelId || oldState.channelId !== newState.channelId)
+      )
     ) {
       const logs = member.guild.channels.cache.get(REPORT_LOGS);
       logs.send("<@" + member.id + "> d5al lel room <#" + newState.channel.id + ">",);
@@ -465,26 +474,57 @@ client.on("interactionCreate", async (interaction) => {
     if (
       member.roles.cache.has(CITIZEN) &&
       newState.channel &&
-      REPORT_WAIT.includes(newState.channel.id)
+      REPORT_WAIT.includes(newState.channel.id) && (!oldState.channelId || oldState.channelId !== newState.channelId)
     ) {
       const textChannel = member.guild.channels.cache.get(REPORT_MENTION);
       if (textChannel) {
         const ReportEmbed = new EmbedBuilder()
           .setColor("#3c204b")
-          .setTitle("REPORT MENTION")
-          .setDescription(`Check Waiting For Report Room.`);
+          .setTitle("REPORT Claim")
+          .setDescription(`Claim Before You Join The Report.`);
+        
+          const claimRep = new ActionRowBuilder().addComponents(
+            new ButtonBuilder()
+              .setCustomId(`claim_${member.id}`)
+              .setLabel("Claim Report")
+              .setStyle("Primary")
+          );
   
         console.log("Fama chkoun d5al lel report room")
   
         textChannel.send({
           content: "<@&" + REPORT_PERMISSION + "> (<@" + member.id + ">)",
           embeds: [ReportEmbed],
+          components: [claimRep],
         });
   
       }
     }
   });
+
+  client.on("interactionCreate", async (interaction) => {
+    if (!interaction.isButton()) return;
   
+    const { customId } = interaction;
+  
+    if (customId.startsWith("claim")) {
+      const [action, memberId] = customId.split("_");
+      const member = interaction.guild.members.cache.get(memberId);
+  
+      if (!member) return;
+  
+      if (interaction.member.roles.cache.has(REPORT_PERMISSION)) {
+        claims.set(memberId, interaction.member.id);
+  
+        const verificationEmbed = new EmbedBuilder()
+          .setColor("#3c204b")
+          .setTitle("Role Assignment")
+          .setDescription('Claimed by ' + (interaction.member.nickname || interaction.member.user.username));
+        
+        console.log('Claimed by ' + (interaction.member.nickname || interaction.member.user.username))
+      }
+    }
+});
   //----------Report-------//
 
 //--------------Commands--------------//
