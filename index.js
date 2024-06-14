@@ -373,7 +373,6 @@ client.on("interactionCreate", async (interaction) => {
           .setStyle("Danger")
       );
 
-      
       await interaction.update({
         content: "<@&" + VERIF_PERMISSION + "> (<@" + member.id + ">)",
         embeds: [verificationEmbed],
@@ -393,21 +392,23 @@ client.on("interactionCreate", async (interaction) => {
 
     if (!member) return;
 
-    
     const claimerId = claims.get(memberId);
-    if (
-      interaction.member.id === claimerId &&
-      interaction.member.voice.channelId === member.voice.channelId &&
-      member.roles.cache.has(VISITOR)
-    ) {
+    if (interaction.member.id === claimerId && member.roles.cache.has(VISITOR)) {
       let message;
 
       switch (option) {
         case "boy":
-          await member.roles.add(CITIZEN);
-          await member.roles.remove(VISITOR);
-          message = "Verified";
-          break;        
+          if (interaction.member.voice.channelId === member.voice.channelId) {
+            await member.roles.add(CITIZEN);
+            await member.roles.remove(VISITOR);
+            message = "Verified";
+          } else {
+            return interaction.reply({
+              content: "You and the member must be in the same voice channel for verification.",
+              ephemeral: true,
+            });
+          }
+          break;
 
         case "blacklist":
           await member.roles.add(BLACKLIST);
@@ -433,16 +434,15 @@ client.on("interactionCreate", async (interaction) => {
       }
     } else {
       interaction.reply({
-        content: "You don't have permission to perform this action, you're not in the same voice channel as the member, or the member no longer has the old role.",
+        content: "You don't have permission to perform this action or the member no longer has the old role.",
         ephemeral: true,
       });
     }
   }
-
-  
 });
 
-  //----------Verification-------//
+//----------Verification-------//
+
 
   //----------Report-------//
   client.on("voiceStateUpdate", (oldState, newState) => {
