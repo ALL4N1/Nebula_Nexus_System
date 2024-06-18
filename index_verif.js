@@ -1,3 +1,5 @@
+require('web-streams-polyfill/es6');
+
 const { Client, Intents, Events, GatewayIntentBits, ActionRowBuilder, ButtonBuilder, ButtonStyle, EmbedBuilder } = require('discord.js');
 const moment = require('moment');
 const ytdl = require('ytdl-core');
