@@ -359,7 +359,7 @@ client.on("interactionCreate", async (interaction) => {
         .setTitle("Role Assignment")
         .setDescription('Claimed by ' + (interaction.member.nickname || interaction.member.user.username));
 
-      console.log('Claimed by ' + (interaction.member.nickname || interaction.member.user.username))
+      console.log('Verification Claimed by ' + (interaction.member.nickname || interaction.member.user.username))
 
       const roleRow = new ActionRowBuilder().addComponents(
         new ButtonBuilder()
