@@ -296,7 +296,7 @@ if (message.channelId === CHANGE) {
 });
 
 //----------Verification-------//
-
+/*
 const claims = new Map();
 
 client.on("voiceStateUpdate", (oldState, newState) => {
@@ -444,7 +444,7 @@ client.on("interactionCreate", async (interaction) => {
       });
     }
   }
-});
+}); */
 
 //----------Verification-------//
 
