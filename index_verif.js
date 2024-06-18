@@ -223,7 +223,7 @@ client.on('interactionCreate', async interaction => {
 
 
 
-client.login(process.env['bot_secret']);
+client.login(process.env.TOKEN);
 const Discord = require('discord.js');
 client.on(Discord.Events.InteractionCreate, async interaction => {
   if (!interaction.isChatInputCommand()) return;
