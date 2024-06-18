@@ -1,4 +1,4 @@
-require('web-streams-polyfill/es2018');
+require('web-streams-polyfill/ponyfill');
 
 const { Client, Intents, Events, GatewayIntentBits, ActionRowBuilder, ButtonBuilder, ButtonStyle, EmbedBuilder } = require('discord.js');
 const moment = require('moment');
