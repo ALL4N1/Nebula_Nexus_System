@@ -77,7 +77,7 @@ client.on("messageCreate", async (message) => {
 
   if (message.content.toLowerCase().includes("a7la nass")) {
     message.reply("3aychou L7ob");
-    console.log("slm");
+    console.log("a7la nass");
   }
 
   if (message.author.bot) return;
