@@ -502,28 +502,28 @@ client.on("interactionCreate", async (interaction) => {
     }
   });
 
-  client.on("interactionCreate", async (interaction) => {
-    if (!interaction.isButton()) return;
-  
-    const { customId } = interaction;
-  
-    if (customId.startsWith("claim")) {
-      const [action, memberId] = customId.split("_");
-      const member = interaction.guild.members.cache.get(memberId);
-  
-      if (!member) return;
-  
-      if (interaction.member.roles.cache.has(REPORT_PERMISSION)) {
-        claims.set(memberId, interaction.member.id);
-  
-        const verificationEmbed = new EmbedBuilder()
-          .setColor("#3c204b")
-          .setTitle("Role Assignment")
-          .setDescription('Claimed by ' + (interaction.member.nickname || interaction.member.user.username));
-        
-        console.log('Claimed by ' + (interaction.member.nickname || interaction.member.user.username))
-      }
+client.on("interactionCreate", async (interaction) => {
+  if (!interaction.isButton()) return;
+
+  const { customId } = interaction;
+
+  if (customId.startsWith("claim")) {
+    const [action, memberId] = customId.split("_");
+    const member = interaction.guild.members.cache.get(memberId);
+
+    if (!member) return;
+
+    if (interaction.member.roles.cache.has(REPORT_PERMISSION)) {
+      claims.set(memberId, interaction.member.id);
+
+      const Reportmbed = new EmbedBuilder()
+        .setColor("#3c204b")
+        .setTitle("Report Claimed")
+        .setDescription('Claimed by ' + (interaction.member.nickname || interaction.member.user.username));
+      
+      console.log('Report Claimed by ' + (interaction.member.nickname || interaction.member.user.username))
     }
+  }
 });
   //----------Report-------//
 
