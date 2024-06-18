@@ -80,6 +80,11 @@ client.on("messageCreate", async (message) => {
     console.log("a7la nass");
   }
 
+  if (message.content.toLowerCase().includes("<@747962450392907948>")) {
+    message.reply("baz raw raged hathaka tayechlou msg fel prv");
+    console.log("a7la nass");
+  }
+
   if (message.author.bot) return;
 
 //----------Change Name-------//
