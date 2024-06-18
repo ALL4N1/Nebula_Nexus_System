@@ -485,7 +485,7 @@ client.on("interactionCreate", async (interaction) => {
         
           const claimRep = new ActionRowBuilder().addComponents(
             new ButtonBuilder()
-              .setCustomId(`claim_${member.id}`)
+              .setCustomId(`claimrep_${member.id}`)
               .setLabel("Claim Report")
               .setStyle("Primary")
           );
@@ -507,7 +507,7 @@ client.on("interactionCreate", async (interaction) => {
 
   const { customId } = interaction;
 
-  if (customId.startsWith("claim")) {
+  if (customId.startsWith("claimrep")) {
     const [action, memberId] = customId.split("_");
     const member = interaction.guild.members.cache.get(memberId);
 
