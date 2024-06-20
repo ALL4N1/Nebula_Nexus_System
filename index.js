@@ -386,7 +386,7 @@ client.once('ready', () => {
 });
 
 async function checkEmptyVoiceChannels() {
-  const guild = client.guilds.cache.first(); // Get the first guild the bot is in
+  const guild = client.guilds.cache.get('1226979436143050784'); // Get the first guild the bot is in
   if (!guild) return;
 
   const category = guild.channels.cache.get(CATEGORY_ID);
