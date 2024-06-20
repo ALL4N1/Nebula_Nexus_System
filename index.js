@@ -392,7 +392,7 @@ async function checkEmptyVoiceChannels() {
   const category = guild.channels.cache.get(CATEGORY_ID);
   if (!category) return;
 
-  const voiceChannels = category.children.filter(channel => channel.type === 'GUILD_VOICE');
+  const voiceChannels = category.children.cache.filter(channel => channel.type === 'GUILD_VOICE');
 
   for (const channel of voiceChannels.values()) {
     if (WHITELIST.includes(channel.id)) continue;
@@ -401,7 +401,7 @@ async function checkEmptyVoiceChannels() {
       const lastActive = channel.lastActiveTimestamp || Date.now();
       const now = Date.now();
 
-      if (now - lastActive >= 5 * 60 * 1000) { // 5 minutes
+      if (now - lastActive >= 1 * 60 * 1000) { // 5 minutes
         await channel.delete().catch(console.error);
       }
     } else {
