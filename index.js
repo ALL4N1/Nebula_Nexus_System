@@ -375,4 +375,45 @@ client.on("messageCreate", async (message) => {
 
 //--------------Commands--------------//
 
+// Voice Channel Cleanup Logic
+const CATEGORY_ID = '1249197923150069883';
+const WHITELIST = ["1249197926690062391", "1249197931223978035", "1250787368890400828"];
+
+client.once('ready', () => {
+  console.log("Load the voice cleanup !!");
+  checkEmptyVoiceChannels();
+  setInterval(checkEmptyVoiceChannels, 1 * 60 * 1000); // Check every 1 minutes
+});
+
+async function checkEmptyVoiceChannels() {
+  const guild = client.guilds.cache.first(); // Get the first guild the bot is in
+  if (!guild) return;
+
+  const category = guild.channels.cache.get(CATEGORY_ID);
+  if (!category) return;
+
+  const voiceChannels = category.children.filter(channel => channel.type === 'GUILD_VOICE');
+
+  for (const channel of voiceChannels.values()) {
+    if (WHITELIST.includes(channel.id)) continue;
+
+    if (channel.members.size === 0) {
+      const lastActive = channel.lastActiveTimestamp || Date.now();
+      const now = Date.now();
+
+      if (now - lastActive >= 5 * 60 * 1000) { // 5 minutes
+        await channel.delete().catch(console.error);
+      }
+    } else {
+      channel.lastActiveTimestamp = Date.now();
+    }
+  }
+}
+
+client.on('voiceStateUpdate', (oldState, newState) => {
+  if (oldState.channelId && oldState.channel.members.size === 0) {
+    oldState.channel.lastActiveTimestamp = Date.now();
+  }
+});
+
 client.login(process.env.TOKEN);
