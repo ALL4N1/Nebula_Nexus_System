@@ -241,6 +241,8 @@ if (message.channelId === CHANGE) {
         }
       }
     //----------Warn-------//
+    }
+});
 
   //----------Report-------//
   client.on("voiceStateUpdate", (oldState, newState) => {
