@@ -244,8 +244,8 @@ if (message.channelId === CHANGE) {
     }
 });
 
-  //----------Report-------//
-  client.on("voiceStateUpdate", (oldState, newState) => {
+  //----------Report-------// /* Commented for renewing */ 
+  /* client.on("voiceStateUpdate", (oldState, newState) => {
     const member = newState.member;
     
     if (member.roles.cache.has(REPORT_PERMISSION) &&
@@ -325,7 +325,7 @@ client.on("interactionCreate", async (interaction) => {
     }
   }
 });
-  //----------Report-------//
+  //----------Report-------// */
 
 //--------------Commands--------------//
 
