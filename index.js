@@ -374,14 +374,16 @@ client.on("messageCreate", async (message) => {
 });
 
 //--------------Commands--------------//
-// Voice Channel Cleanup Logic
+
+//--------------Temp_VC_Cleanup--------------//
+
 const CATEGORY_ID = '1249197923150069883';
 const WHITELIST = ["1249197926690062391", "1249197931223978035", "1250787368890400828"];
 
 client.once('ready', () => {
   console.log(`Loaded vc!`);
   checkEmptyVoiceChannels();
-  setInterval(checkEmptyVoiceChannels, 1 * 60 * 1000); // Check every 1 minute for testing
+  setInterval(checkEmptyVoiceChannels, 3 * 60 * 1000); // Check every 3 minute for testing
 });
 
 async function checkEmptyVoiceChannels() {
@@ -401,7 +403,6 @@ async function checkEmptyVoiceChannels() {
   console.log(`Found ${voiceChannels.size} voice channels in the category`);
 
   for (const channel of voiceChannels.values()) {
-    console.log(`Checking channel ${channel.name} (${channel.id})`);
 
     if (WHITELIST.includes(channel.id)) {
       console.log(`Channel ${channel.name} is whitelisted`);
@@ -417,7 +418,7 @@ async function checkEmptyVoiceChannels() {
       const now = Date.now();
       console.log(`Channel ${channel.name} is empty, last active ${now - channel.lastActiveTimestamp} ms ago`);
 
-      if (now - channel.lastActiveTimestamp >= 1 * 60 * 1000) { // 1 minutes
+      if (now - channel.lastActiveTimestamp >= 3 * 60 * 1000) { // 3 minutes
         console.log(`Deleting channel ${channel.name}`);
         await channel.delete().catch(console.error);
       }
