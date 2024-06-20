@@ -380,32 +380,48 @@ const CATEGORY_ID = '1249197923150069883';
 const WHITELIST = ["1249197926690062391", "1249197931223978035", "1250787368890400828"];
 
 client.once('ready', () => {
-  console.log("Load the voice cleanup !!");
+  console.log(`Loaded the deleted vc!`);
   checkEmptyVoiceChannels();
-  setInterval(checkEmptyVoiceChannels, 1 * 60 * 1000); // Check every 1 minutes
+  setInterval(checkEmptyVoiceChannels, 1 * 60 * 1000); // Check every 5 minutes
 });
 
 async function checkEmptyVoiceChannels() {
-  const guild = client.guilds.cache.get('1226979436143050784'); // Get the first guild the bot is in
-  if (!guild) return;
+  const guild = client.guilds.cache.get('1226979436143050784'); // Get the specific guild by its ID
+  if (!guild) {
+    console.log('Guild not found');
+    return;
+  }
 
   const category = guild.channels.cache.get(CATEGORY_ID);
-  if (!category) return;
+  if (!category) {
+    console.log('Category not found');
+    return;
+  }
 
-  const voiceChannels = category.children.cache.filter(channel => channel.type === 'GUILD_VOICE');
+  const voiceChannels = category.children.cache.filter(channel => channel.type === Discord.ChannelType.GuildVoice);
+  console.log(`Found ${voiceChannels.size} voice channels in the category`);
 
   for (const channel of voiceChannels.values()) {
-    if (WHITELIST.includes(channel.id)) continue;
+    console.log(`Checking channel ${channel.name} (${channel.id})`);
+
+    if (WHITELIST.includes(channel.id)) {
+      console.log(`Channel ${channel.name} is whitelisted`);
+      continue;
+    }
 
     if (channel.members.size === 0) {
       const lastActive = channel.lastActiveTimestamp || Date.now();
       const now = Date.now();
 
+      console.log(`Channel ${channel.name} is empty, last active ${now - lastActive} ms ago`);
+
       if (now - lastActive >= 1 * 60 * 1000) { // 5 minutes
+        console.log(`Deleting channel ${channel.name}`);
         await channel.delete().catch(console.error);
       }
     } else {
       channel.lastActiveTimestamp = Date.now();
+      console.log(`Channel ${channel.name} has members, updated last active timestamp`);
     }
   }
 }
@@ -413,6 +429,7 @@ async function checkEmptyVoiceChannels() {
 client.on('voiceStateUpdate', (oldState, newState) => {
   if (oldState.channelId && oldState.channel.members.size === 0) {
     oldState.channel.lastActiveTimestamp = Date.now();
+    console.log(`Updated last active timestamp for channel ${oldState.channel.name}`);
   }
 });
 
