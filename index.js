@@ -454,6 +454,11 @@ const ROLE_ID = '1227087978741108778';
 
 client.on('guildMemberAdd', member => {
   if (member.guild.id === GUILD_ID) {
+    if (member.user.bot) {
+      console.log(`Bot joined: ${member.user.tag}, not assigning role.`);
+      return;
+    }
+
     console.log(`New member joined: ${member.user.tag}`);
     setTimeout(async () => {
       const role = member.guild.roles.cache.get(ROLE_ID);
