@@ -245,6 +245,9 @@ if (message.channelId === CHANGE) {
 });
 
   //----------Report_New-------//
+const claimCooldown = new Map();
+
+// Report handling
 client.on('voiceStateUpdate', async (oldState, newState) => {
   const waitingRoomID = '1250199602490118266'; // waiting for report vc
   const staffRoleID = '1236773938076319834'; // report staff role
@@ -256,13 +259,20 @@ client.on('voiceStateUpdate', async (oldState, newState) => {
       const staffRole = newState.guild.roles.cache.get(staffRoleID);
       if (!channel || !staffRole) return;
 
-      const notifyMsg = await channel.send({ content: `${staffRole}, a user is waiting for admin in the waiting room!` });
+      const userId = newState.member.id;
+      const now = Date.now();
 
-      // Check cooldown for user
-      const lastClaimedTime = claimCooldown.get(newState.member.id);
-      if (lastClaimedTime && Date.now() - lastClaimedTime < cooldownPeriod) {
-        return; // User has already claimed a report within the cooldown period
+      // Check if user is on cooldown
+      if (claimCooldown.has(userId)) {
+        const lastClaimedTime = claimCooldown.get(userId);
+        const timeSinceLastClaim = now - lastClaimedTime;
+        if (timeSinceLastClaim < cooldownPeriod) {
+          console.log(`User ${newState.member.user.tag} is on cooldown for ${Math.ceil((cooldownPeriod - timeSinceLastClaim) / 1000)} seconds.`);
+          return;
+        }
       }
+
+      const notifyMsg = await channel.send({ content: `${staffRole}, a user is waiting for admin in the waiting room!` });
 
       const embed = new EmbedBuilder()
         .setTitle('Report Waiting')
@@ -290,7 +300,7 @@ client.on('voiceStateUpdate', async (oldState, newState) => {
         await newState.member.voice.setChannel(claimedMember.voice.channel);
 
         // Update cooldown for user
-        claimCooldown.set(newState.member.id, Date.now());
+        claimCooldown.set(userId, now);
 
         embed.setFooter({ text: `Claimed by ${claimedMember.user.tag}`, iconURL: claimedMember.user.displayAvatarURL() });
 
