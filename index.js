@@ -246,8 +246,7 @@ if (message.channelId === CHANGE) {
 
   //----------Report_New-------//
 
-// Set to track users on cooldown
-const claimCooldown = new Set();
+const claimCooldowns = new Map();
 const cooldownPeriod = 15 * 60 * 1000; // 15 minutes in milliseconds
 
 client.on('voiceStateUpdate', async (oldState, newState) => {
@@ -257,9 +256,10 @@ client.on('voiceStateUpdate', async (oldState, newState) => {
   async function processVoiceStateUpdate() {
     if (newState.channelId === waitingRoomID && oldState.channelId !== waitingRoomID && !newState.member.roles.cache.has(staffRoleID)) {
       const userId = newState.member.id;
+      const currentTime = Date.now();
 
       // Check if user is on cooldown
-      if (claimCooldown.has(userId)) {
+      if (claimCooldowns.has(userId) && claimCooldowns.get(userId) > currentTime) {
         console.log(`User ${newState.member.user.tag} is on cooldown.`);
         return;
       }
@@ -305,14 +305,8 @@ client.on('voiceStateUpdate', async (oldState, newState) => {
 
           await notifyMsg.edit(`${staffRole}, a report has been claimed by ${claimedMember}!`);
 
-          // Add user to cooldown set
-          claimCooldown.add(userId);
-
-          // Remove user from cooldown set after cooldown period
-          setTimeout(() => {
-            claimCooldown.delete(userId);
-            console.log(`User ${newState.member.user.tag} cooldown expired.`);
-          }, cooldownPeriod);
+          // Add user to cooldown map
+          claimCooldowns.set(userId, currentTime + cooldownPeriod);
         } catch (error) {
           console.error('Error processing interaction:', error);
         }
@@ -323,6 +317,9 @@ client.on('voiceStateUpdate', async (oldState, newState) => {
           await msg.edit({ components: [] });
         }
       });
+
+      // Set the user's cooldown expiration time
+      claimCooldowns.set(userId, currentTime + cooldownPeriod);
     }
   }
 
