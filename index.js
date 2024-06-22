@@ -276,21 +276,22 @@ client.on('voiceStateUpdate', async (oldState, newState) => {
       const collector = channel.createMessageComponentCollector({ filter, time: 60000 });
 
       collector.on('collect', async (interaction) => {
-        await interaction.deferUpdate();
-        const claimedMember = interaction.member;
+  await interaction.deferUpdate();
+  const claimedMember = interaction.member;
 
-        // Move the user who wants to report to the staff member's channel
-        await newState.member.voice.setChannel(claimedMember.voice.channel);
+  // Move the user who wants to report to the staff member's channel
+  await newState.member.voice.setChannel(claimedMember.voice.channel);
 
-        embed.setFooter({ text: `Claimed by ${claimedMember.user.tag}`, iconURL: claimedMember.user.displayAvatarURL() });
+  // Correct usage of setFooter with an object containing text and iconURL
+  embed.setFooter({ text: `Claimed by ${claimedMember.user.tag}`, iconURL: claimedMember.user.displayAvatarURL() });
 
-        await interaction.message.edit({
-          embeds: [embed],
-          components: [],
-        });
+  await interaction.message.edit({
+    embeds: [embed],
+    components: [],
+  });
 
-        await notifyMsg.edit(`${staffRole}, a report has been claimed by ${claimedMember}!`);
-      });
+  await notifyMsg.edit(`${staffRole}, a report has been claimed by ${claimedMember}!`);
+});
 
       collector.on('end', async () => {
         await msg.edit({ components: [] });
