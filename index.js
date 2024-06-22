@@ -246,28 +246,22 @@ if (message.channelId === CHANGE) {
 
   //----------Report_New-------//
 
-// Map to track when each user last claimed a report
-const claimCooldown = new Map();
+// Set to track users on cooldown
+const claimCooldown = new Set();
+const cooldownPeriod = 15 * 60 * 1000; // 15 minutes in milliseconds
 
-// Report handling
 client.on('voiceStateUpdate', async (oldState, newState) => {
   const waitingRoomID = '1250199602490118266'; // waiting for report vc
   const staffRoleID = '1236773938076319834'; // report staff role
-  const cooldownPeriod = 15 * 60 * 1000; // 15 minutes in milliseconds
 
   async function processVoiceStateUpdate() {
     if (newState.channelId === waitingRoomID && oldState.channelId !== waitingRoomID && !newState.member.roles.cache.has(staffRoleID)) {
       const userId = newState.member.id;
-      const now = Date.now();
 
       // Check if user is on cooldown
       if (claimCooldown.has(userId)) {
-        const lastClaimedTime = claimCooldown.get(userId);
-        const timeSinceLastClaim = now - lastClaimedTime;
-        if (timeSinceLastClaim < cooldownPeriod) {
-          console.log(`User ${newState.member.user.tag} is on cooldown for ${Math.ceil((cooldownPeriod - timeSinceLastClaim) / 1000)} seconds.`);
-          return;
-        }
+        console.log(`User ${newState.member.user.tag} is on cooldown.`);
+        return;
       }
 
       const channel = client.channels.cache.get('1250199005045063771'); // report request text channel
@@ -301,9 +295,6 @@ client.on('voiceStateUpdate', async (oldState, newState) => {
         // Move the user who wants to report to the staff member's channel
         await newState.member.voice.setChannel(claimedMember.voice.channel);
 
-        // Update cooldown for user
-        claimCooldown.set(userId, now);
-
         embed.setFooter({ text: `Claimed by ${claimedMember.user.tag}`, iconURL: claimedMember.user.displayAvatarURL() });
 
         await interaction.message.edit({
@@ -319,6 +310,15 @@ client.on('voiceStateUpdate', async (oldState, newState) => {
           await msg.edit({ components: [] });
         }
       });
+
+      // Add user to cooldown set
+      claimCooldown.add(userId);
+
+      // Remove user from cooldown set after cooldown period
+      setTimeout(() => {
+        claimCooldown.delete(userId);
+        console.log(`User ${newState.member.user.tag} cooldown expired.`);
+      }, cooldownPeriod);
     }
   }
 
