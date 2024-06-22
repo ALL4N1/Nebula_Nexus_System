@@ -257,12 +257,12 @@ client.on('voiceStateUpdate', async (oldState, newState) => {
     if (newState.channelId === waitingRoomID && oldState.channelId !== waitingRoomID && !newState.member.roles.cache.has(staffRoleID)) {
       const userId = newState.member.id;
 
-      // Check if user is on cooldown
+      // Check if user received a notification recently
       if (claimCooldown.has(userId)) {
-        const lastClaimedTime = claimCooldown.get(userId);
-        const timeSinceLastClaim = Date.now() - lastClaimedTime;
-        if (timeSinceLastClaim < cooldownPeriod) {
-          console.log(`User ${newState.member.user.tag} is on cooldown for ${Math.ceil((cooldownPeriod - timeSinceLastClaim) / 1000)} seconds.`);
+        const lastNotificationTime = claimCooldown.get(userId);
+        const timeSinceLastNotification = Date.now() - lastNotificationTime;
+        if (timeSinceLastNotification < cooldownPeriod) {
+          console.log(`User ${newState.member.user.tag} received a notification recently.`);
           return;
         }
       }
@@ -298,7 +298,7 @@ client.on('voiceStateUpdate', async (oldState, newState) => {
         // Move the user who wants to report to the staff member's channel
         await newState.member.voice.setChannel(claimedMember.voice.channel);
 
-        // Update cooldown for user
+        // Record the time of notification for cooldown
         claimCooldown.set(userId, Date.now());
 
         embed.setFooter({ text: `Claimed by ${claimedMember.user.tag}`, iconURL: claimedMember.user.displayAvatarURL() });
