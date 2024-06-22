@@ -248,6 +248,7 @@ if (message.channelId === CHANGE) {
 client.on('voiceStateUpdate', async (oldState, newState) => {
   const waitingRoomID = '1250199602490118266'; // waiting for report vc
   const staffRoleID = '1236773938076319834'; // report staff role
+  const cooldownPeriod = 15 * 60 * 1000; // 15 minutes in milliseconds
 
   async function processVoiceStateUpdate() {
     if (newState.channelId === waitingRoomID && oldState.channelId !== waitingRoomID && !newState.member.roles.cache.has(staffRoleID)) {
@@ -256,6 +257,12 @@ client.on('voiceStateUpdate', async (oldState, newState) => {
       if (!channel || !staffRole) return;
 
       const notifyMsg = await channel.send({ content: `${staffRole}, a user is waiting for admin in the waiting room!` });
+
+      // Check cooldown for user
+      const lastClaimedTime = claimCooldown.get(newState.member.id);
+      if (lastClaimedTime && Date.now() - lastClaimedTime < cooldownPeriod) {
+        return; // User has already claimed a report within the cooldown period
+      }
 
       const embed = new EmbedBuilder()
         .setTitle('Report Waiting')
@@ -276,22 +283,24 @@ client.on('voiceStateUpdate', async (oldState, newState) => {
       const collector = channel.createMessageComponentCollector({ filter, time: 60000 });
 
       collector.on('collect', async (interaction) => {
-  await interaction.deferUpdate();
-  const claimedMember = interaction.member;
+        await interaction.deferUpdate();
+        const claimedMember = interaction.member;
 
-  // Move the user who wants to report to the staff member's channel
-  await newState.member.voice.setChannel(claimedMember.voice.channel);
+        // Move the user who wants to report to the staff member's channel
+        await newState.member.voice.setChannel(claimedMember.voice.channel);
 
-  // Correct usage of setFooter with an object containing text and iconURL
-  embed.setFooter({ text: `Claimed by ${claimedMember.user.tag}`, iconURL: claimedMember.user.displayAvatarURL() });
+        // Update cooldown for user
+        claimCooldown.set(newState.member.id, Date.now());
 
-  await interaction.message.edit({
-    embeds: [embed],
-    components: [],
-  });
+        embed.setFooter({ text: `Claimed by ${claimedMember.user.tag}`, iconURL: claimedMember.user.displayAvatarURL() });
 
-  await notifyMsg.edit(`${staffRole}, a report has been claimed by ${claimedMember}!`);
-});
+        await interaction.message.edit({
+          embeds: [embed],
+          components: [],
+        });
+
+        await notifyMsg.edit(`${staffRole}, a report has been claimed by ${claimedMember}!`);
+      });
 
       collector.on('end', async () => {
         await msg.edit({ components: [] });
