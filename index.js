@@ -244,88 +244,66 @@ if (message.channelId === CHANGE) {
     }
 });
 
-  //----------Report-------// /* Commented for renewing */ 
-  /* client.on("voiceStateUpdate", (oldState, newState) => {
-    const member = newState.member;
-    
-    if (member.roles.cache.has(REPORT_PERMISSION) &&
-      newState.channel &&
-      
-      (
-        REPORT_WAIT.includes(newState.channel.id) && (!oldState.channelId || oldState.channelId !== newState.channelId) || 
-        REPORT_VOICES.includes(newState.channel.id) && (!oldState.channelId || oldState.channelId !== newState.channelId)
-      )
-    ) {
-      const logs = member.guild.channels.cache.get(REPORT_LOGS);
-      logs.send("Staff <@" + member.id + "> d5al lel room <#" + newState.channel.id + ">",);
-    }
+  //----------Report_New-------//
+client.on('voiceStateUpdate', async (oldState, newState) => {
+  const waitingRoomID = '1250199602490118266'; //waiting for report vc
+  const staffRoleID = '1236773938076319834'; // report staff role
+  let reportsClaimed = 0;
 
-    else if (member.roles.cache.has(CITIZEN) &&
-      newState.channel &&
-      (
-        REPORT_WAIT.includes(newState.channel.id) && (!oldState.channelId || oldState.channelId !== newState.channelId) || 
-        REPORT_VOICES.includes(newState.channel.id) && (!oldState.channelId || oldState.channelId !== newState.channelId)
-      )
-    ) {
-      const logs = member.guild.channels.cache.get(REPORT_LOGS);
-      logs.send("<@" + member.id + "> d5al lel room <#" + newState.channel.id + ">",);
-    }
-  
-    if (
-      member.roles.cache.has(CITIZEN) &&
-      newState.channel &&
-      REPORT_WAIT.includes(newState.channel.id) && (!oldState.channelId || oldState.channelId !== newState.channelId)
-    ) {
-      const textChannel = member.guild.channels.cache.get(REPORT_MENTION);
-      if (textChannel) {
-        const ReportEmbed = new EmbedBuilder()
-          .setColor("#3c204b")
-          .setTitle("REPORT Claim")
-          .setDescription(`Claim Before You Join The Report.`);
-        
-          const claimRep = new ActionRowBuilder().addComponents(
-            new ButtonBuilder()
-              .setCustomId(`claimrep_${member.id}`)
-              .setLabel("Claim Report")
-              .setStyle("Primary")
-          );
-  
-        console.log("Fama chkoun d5al lel report room")
-  
-        textChannel.send({
-          content: "<@&" + REPORT_PERMISSION + "> (<@" + member.id + ">)",
-          embeds: [ReportEmbed],
-          components: [claimRep],
+  async function processVoiceStateUpdate() {
+    if (newState.channelId === waitingRoomID && oldState.channelId !== waitingRoomID && newState.member.roles.cache.has(staffRoleID) === false) {
+      const channel = client.channels.cache.get('1250199005045063771'); // report request text channel
+      const staffRole = newState.guild.roles.cache.get(staffRoleID);
+      if (!channel || !staffRole) return;
+
+      const notifyMsg = await channel.send({ content: `${staffRole}, a user is waiting for admin in the waiting room!` });
+
+      const embed = new Discord.MessageEmbed()
+        .setTitle('Report Waiting')
+        .setDescription(`**User:** ${newState.member}\n**Waiting Room:** <#${waitingRoomID}>\n\nClick the button below to claim this report.`)
+        .setColor('#00FFFF')
+        .setTimestamp();
+
+      const button = new Discord.MessageButton()
+        .setLabel('Claim')
+        .setCustomId('report_claim')
+        .setStyle('SUCCESS');
+
+      const row = new Discord.MessageActionRow().addComponents(button);
+
+      const msg = await channel.send({ embeds: [embed], components: [row] });
+
+      const filter = (interaction) => interaction.customId === 'report_claim' && interaction.user.id !== client.user.id;
+      const collector = channel.createMessageComponentCollector({ filter, time: 60000 });
+
+      collector.on('collect', async (interaction) => {
+        await interaction.deferUpdate();
+        const claimedMember = interaction.member;
+        reportsClaimed++;
+
+        // Move the user who wants to report to the staff member's channel
+        await newState.member.voice.setChannel(claimedMember.voice.channel);
+
+        await interaction.message.edit({
+          embeds: [embed.setFooter(`Claimed by ${claimedMember.user.tag}`, claimedMember.user.displayAvatarURL())],
+          components: [],
         });
-  
-      }
-    }
-  });
+        await notifyMsg.edit(`${staffRole}, a report has been claimed by ${claimedMember}!}`);
+      });
 
-client.on("interactionCreate", async (interaction) => {
-  if (!interaction.isButton()) return;
-
-  const { customId } = interaction;
-
-  if (customId.startsWith("claimrep")) {
-    const [action, memberId] = customId.split("_");
-    const member = interaction.guild.members.cache.get(memberId);
-
-    if (!member) return;
-
-    if (interaction.member.roles.cache.has(REPORT_PERMISSION)) {
-      claims.set(memberId, interaction.member.id);
-
-      const Reportmbed = new EmbedBuilder()
-        .setColor("#3c204b")
-        .setTitle("Report Claimed")
-        .setDescription('Claimed by ' + (interaction.member.nickname || interaction.member.user.username));
-      
-      console.log('Report Claimed by ' + (interaction.member.nickname || interaction.member.user.username))
+      collector.on('end', async () => {
+        await msg.edit({ components: [] });
+      });
     }
   }
+
+  try {
+    await processVoiceStateUpdate();
+  } catch (error) {
+    console.error('Error:', error);
+  }
 });
-  //----------Report-------// */
+  //----------Report-------//
 
 //--------------Commands--------------//
 
