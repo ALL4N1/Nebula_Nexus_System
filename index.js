@@ -246,13 +246,35 @@ if (message.channelId === CHANGE) {
 
   //----------Report_New-------//
 
+// Map to track users on cooldown
 const claimCooldowns = new Map();
 const cooldownPeriod = 15 * 60 * 1000; // 15 minutes in milliseconds
+
+// Logging channel ID
+const loggingChannelID = '1250303306337751061';
+
+// Monitored channels
+const monitoredChannels = ["1250199602490118266", "1240095630001700975", "1240095655641350144", "1240095691653775371"];
 
 client.on('voiceStateUpdate', async (oldState, newState) => {
   const waitingRoomID = '1250199602490118266'; // waiting for report vc
   const staffRoleID = '1236773938076319834'; // report staff role
 
+  // Logging user joins
+  async function logUserJoin() {
+    const loggingChannel = client.channels.cache.get(loggingChannelID);
+    if (!loggingChannel) return;
+
+    if (monitoredChannels.includes(newState.channelId)) {
+      const user = newState.member;
+      const roomId = newState.channelId;
+      const role = user.roles.cache.has(staffRoleID) ? 'Staff ' : '';
+
+      await loggingChannel.send(`${role}${user} joined <#${roomId}>`);
+    }
+  }
+
+  // Processing voice state update
   async function processVoiceStateUpdate() {
     if (newState.channelId === waitingRoomID && oldState.channelId !== waitingRoomID && !newState.member.roles.cache.has(staffRoleID)) {
       const userId = newState.member.id;
@@ -307,6 +329,12 @@ client.on('voiceStateUpdate', async (oldState, newState) => {
 
           // Add user to cooldown map
           claimCooldowns.set(userId, currentTime + cooldownPeriod);
+
+          // Log the claim action
+          const loggingChannel = client.channels.cache.get(loggingChannelID);
+          if (loggingChannel) {
+            await loggingChannel.send(`Staff ${claimedMember} claimed ${newState.member}'s report`);
+          }
         } catch (error) {
           console.error('Error processing interaction:', error);
         }
@@ -324,6 +352,7 @@ client.on('voiceStateUpdate', async (oldState, newState) => {
   }
 
   try {
+    await logUserJoin();
     await processVoiceStateUpdate();
   } catch (error) {
     console.error('Error:', error);
