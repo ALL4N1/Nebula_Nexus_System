@@ -245,6 +245,66 @@ if (message.channelId === CHANGE) {
 });
 
   //----------Report_New-------//
+const http = require('http');
+const fs = require('fs');
+
+const port = process.env.PORT || 8080;
+const server = http.createServer((req, res) => {
+  if (req.method === 'GET') {
+    res.writeHead(200, { 'Content-Type': 'text/html' });
+    res.end("I'm alive");
+  } else {
+    res.writeHead(405, { 'Content-Type': 'text/html' });
+    res.end("Method Not Allowed");
+  }
+});
+
+server.listen(port, '0.0.0.0', () => {
+  console.log(`Server running on port ${port}`);
+});
+
+const Discord = require("discord.js");
+const {
+  Client,
+  EmbedBuilder,
+  ActionRowBuilder,
+  ButtonBuilder,
+  ButtonStyle,
+  GatewayIntentBits,
+} = require("discord.js");
+const client = new Client({
+  intents: [
+    GatewayIntentBits.Guilds,
+    GatewayIntentBits.GuildMessages,
+    GatewayIntentBits.MessageContent,
+    GatewayIntentBits.GuildMembers,
+    GatewayIntentBits.GuildVoiceStates,
+  ],
+});
+
+const {
+  SUGGESTION,
+  CHANGE,
+  VERIF_PERMISSION,
+  GATE_VISA,
+  VOICE_GATES,
+  VERIF_LOGS,
+  VISITOR,
+  CITIZEN,
+  BOY,
+  GIRL,
+  ADULT_ROLE,
+  MINOR_ROLE,
+  BLACKLIST,
+  REPORT_MENTION,
+  REPORT_PERMISSION,
+  REPORT_LOGS,
+  REPORT_WAIT,
+  REPORT_VOICES,
+  STARS,
+} = require("./config.json");
+
+// Map to track when each user last claimed a report
 const claimCooldown = new Map();
 
 // Report handling
@@ -256,13 +316,14 @@ client.on('voiceStateUpdate', async (oldState, newState) => {
   async function processVoiceStateUpdate() {
     if (newState.channelId === waitingRoomID && oldState.channelId !== waitingRoomID && !newState.member.roles.cache.has(staffRoleID)) {
       const userId = newState.member.id;
+      const now = Date.now();
 
-      // Check if user received a notification recently
+      // Check if user is on cooldown
       if (claimCooldown.has(userId)) {
-        const lastNotificationTime = claimCooldown.get(userId);
-        const timeSinceLastNotification = Date.now() - lastNotificationTime;
-        if (timeSinceLastNotification < cooldownPeriod) {
-          console.log(`User ${newState.member.user.tag} received a notification recently.`);
+        const lastClaimedTime = claimCooldown.get(userId);
+        const timeSinceLastClaim = now - lastClaimedTime;
+        if (timeSinceLastClaim < cooldownPeriod) {
+          console.log(`User ${newState.member.user.tag} is on cooldown for ${Math.ceil((cooldownPeriod - timeSinceLastClaim) / 1000)} seconds.`);
           return;
         }
       }
@@ -289,17 +350,17 @@ client.on('voiceStateUpdate', async (oldState, newState) => {
       const msg = await channel.send({ embeds: [embed], components: [row] });
 
       const filter = (interaction) => interaction.customId === 'report_claim' && interaction.user.id !== client.user.id;
-      const collector = channel.createMessageComponentCollector({ filter, time: 60000 });
+      const collector = channel.createMessageComponentCollector({ filter, max: 1, time: 60000 });
 
-      collector.once('collect', async (interaction) => {
+      collector.on('collect', async (interaction) => {
         await interaction.deferUpdate();
         const claimedMember = interaction.member;
 
         // Move the user who wants to report to the staff member's channel
         await newState.member.voice.setChannel(claimedMember.voice.channel);
 
-        // Record the time of notification for cooldown
-        claimCooldown.set(userId, Date.now());
+        // Update cooldown for user
+        claimCooldown.set(userId, now);
 
         embed.setFooter({ text: `Claimed by ${claimedMember.user.tag}`, iconURL: claimedMember.user.displayAvatarURL() });
 
@@ -311,8 +372,10 @@ client.on('voiceStateUpdate', async (oldState, newState) => {
         await notifyMsg.edit(`${staffRole}, a report has been claimed by ${claimedMember}!`);
       });
 
-      collector.once('end', async () => {
-        await msg.edit({ components: [] });
+      collector.on('end', async (collected) => {
+        if (collected.size === 0) {
+          await msg.edit({ components: [] });
+        }
       });
     }
   }
