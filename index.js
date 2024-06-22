@@ -246,12 +246,11 @@ if (message.channelId === CHANGE) {
 
   //----------Report_New-------//
 client.on('voiceStateUpdate', async (oldState, newState) => {
-  const waitingRoomID = '1250199602490118266'; //waiting for report vc
+  const waitingRoomID = '1250199602490118266'; // waiting for report vc
   const staffRoleID = '1236773938076319834'; // report staff role
-  let reportsClaimed = 0;
 
   async function processVoiceStateUpdate() {
-    if (newState.channelId === waitingRoomID && oldState.channelId !== waitingRoomID && newState.member.roles.cache.has(staffRoleID) === false) {
+    if (newState.channelId === waitingRoomID && oldState.channelId !== waitingRoomID && !newState.member.roles.cache.has(staffRoleID)) {
       const channel = client.channels.cache.get('1250199005045063771'); // report request text channel
       const staffRole = newState.guild.roles.cache.get(staffRoleID);
       if (!channel || !staffRole) return;
@@ -279,16 +278,18 @@ client.on('voiceStateUpdate', async (oldState, newState) => {
       collector.on('collect', async (interaction) => {
         await interaction.deferUpdate();
         const claimedMember = interaction.member;
-        reportsClaimed++;
 
         // Move the user who wants to report to the staff member's channel
         await newState.member.voice.setChannel(claimedMember.voice.channel);
 
+        embed.setFooter({ text: `Claimed by ${claimedMember.user.tag}`, iconURL: claimedMember.user.displayAvatarURL() });
+
         await interaction.message.edit({
-          embeds: [embed.setFooter(`Claimed by ${claimedMember.user.tag}`, claimedMember.user.displayAvatarURL())],
+          embeds: [embed],
           components: [],
         });
-        await notifyMsg.edit(`${staffRole}, a report has been claimed by ${claimedMember}!}`);
+
+        await notifyMsg.edit(`${staffRole}, a report has been claimed by ${claimedMember}!`);
       });
 
       collector.on('end', async () => {
