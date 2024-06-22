@@ -245,64 +245,6 @@ if (message.channelId === CHANGE) {
 });
 
   //----------Report_New-------//
-const http = require('http');
-const fs = require('fs');
-
-const port = process.env.PORT || 8080;
-const server = http.createServer((req, res) => {
-  if (req.method === 'GET') {
-    res.writeHead(200, { 'Content-Type': 'text/html' });
-    res.end("I'm alive");
-  } else {
-    res.writeHead(405, { 'Content-Type': 'text/html' });
-    res.end("Method Not Allowed");
-  }
-});
-
-server.listen(port, '0.0.0.0', () => {
-  console.log(`Server running on port ${port}`);
-});
-
-const Discord = require("discord.js");
-const {
-  Client,
-  EmbedBuilder,
-  ActionRowBuilder,
-  ButtonBuilder,
-  ButtonStyle,
-  GatewayIntentBits,
-} = require("discord.js");
-const client = new Client({
-  intents: [
-    GatewayIntentBits.Guilds,
-    GatewayIntentBits.GuildMessages,
-    GatewayIntentBits.MessageContent,
-    GatewayIntentBits.GuildMembers,
-    GatewayIntentBits.GuildVoiceStates,
-  ],
-});
-
-const {
-  SUGGESTION,
-  CHANGE,
-  VERIF_PERMISSION,
-  GATE_VISA,
-  VOICE_GATES,
-  VERIF_LOGS,
-  VISITOR,
-  CITIZEN,
-  BOY,
-  GIRL,
-  ADULT_ROLE,
-  MINOR_ROLE,
-  BLACKLIST,
-  REPORT_MENTION,
-  REPORT_PERMISSION,
-  REPORT_LOGS,
-  REPORT_WAIT,
-  REPORT_VOICES,
-  STARS,
-} = require("./config.json");
 
 // Map to track when each user last claimed a report
 const claimCooldown = new Map();
