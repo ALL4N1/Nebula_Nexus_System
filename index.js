@@ -258,18 +258,18 @@ client.on('voiceStateUpdate', async (oldState, newState) => {
 
       const notifyMsg = await channel.send({ content: `${staffRole}, a user is waiting for admin in the waiting room!` });
 
-      const embed = new Discord.MessageEmbed()
+      const embed = new EmbedBuilder()
         .setTitle('Report Waiting')
         .setDescription(`**User:** ${newState.member}\n**Waiting Room:** <#${waitingRoomID}>\n\nClick the button below to claim this report.`)
         .setColor('#00FFFF')
         .setTimestamp();
 
-      const button = new Discord.MessageButton()
+      const button = new ButtonBuilder()
         .setLabel('Claim')
         .setCustomId('report_claim')
-        .setStyle('SUCCESS');
+        .setStyle(ButtonStyle.Success);
 
-      const row = new Discord.MessageActionRow().addComponents(button);
+      const row = new ActionRowBuilder().addComponents(button);
 
       const msg = await channel.send({ embeds: [embed], components: [row] });
 
