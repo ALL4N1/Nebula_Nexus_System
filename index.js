@@ -59,6 +59,8 @@ const {
   REPORT_WAIT,
   REPORT_VOICES,
   STARS,
+  CLAN_LEADER,
+  CLAN_COLEADER,
 } = require("./config.json");
 const { Console } = require("console");
 
