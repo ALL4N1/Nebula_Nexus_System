@@ -361,54 +361,6 @@ client.on('voiceStateUpdate', async (oldState, newState) => {
 });
   //----------Report-------//
 
-//--------------Commands--------------//
-
-const prefix = "!";
-
-client.on("messageCreate", async (message) => {
-  if (!message.content.startsWith(prefix) || message.author.bot) return;
-
-  const args = message.content.slice(prefix.length).trim().split(/ +/);
-  const command = args.shift().toLowerCase();
-
-  if (
-    message.author.id == "368858808690409482" || //Laycat
-    message.author.id == "747962450392907948" || //Evelynn
-    message.author.id == "1226908013105909790"|| //The King
-    message.author.id == "809368215905370142" || //CRL
-    message.author.id == "1043514978700898375"   //Rick
-  ) {
-    switch (command) {
-      case "casino":
-        console.log("Casino started");
-        rsl = 0;
-        for (i = 0; i < 5; i++) {
-          var a = Math.floor(Math.random() * 500) + 400;
-          message.channel.send("Round " + (i + 1) + " : " + a);
-          rsl = rsl + a;
-        }
-
-        message.channel.send("you have " + rsl + " points !");
-        if (rsl < 4000) {
-          message.channel.send(
-            "sorry <@" +
-              message.author.id +
-              "> you have lost your score didn't " +
-              ' make it to 4000, Better Luck Next Time :")))',
-          );
-        } else {
-          message.channel.send(
-            "Congrates, you win <@" + message.author.id + '> :")))',
-          );
-        }
-
-        break;
-    }
-  }
-});
-
-//--------------Commands--------------//
-
 //--------------Temp_VC_Cleanup--------------//
 
 const CATEGORY_ID = '1249197923150069883';
