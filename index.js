@@ -147,7 +147,7 @@ if (message.channelId === CHANGE) {
   if (message.content.startsWith('dk clanadd')) {
     const target = message.mentions.members.first() || message.guild.members.cache.get(message.content.split(' ')[2]);
 
-    if (target && (message.member.roles.cache.has(CLAN_LEADER) || message.member.roles.cache.has(CLAN_CO_LEADER))) {
+    if (target && (message.member.roles.cache.has(CLAN_LEADER) || message.member.roles.cache.has(CLAN_COLEADER))) {
       if (target.roles.cache.has(CITIZEN)) {
         const data = fs.readFileSync('Clan.txt', 'utf8');
         const clanData = data.split('\n').map(line => line.split('/'));
@@ -179,7 +179,7 @@ if (message.channelId === CHANGE) {
   if (message.content.startsWith('dk clankick')) {
     const target = message.mentions.members.first() || message.guild.members.cache.get(message.content.split(' ')[2]);
 
-    if (target && (message.member.roles.cache.has(CLAN_LEADER) || message.member.roles.cache.has(CLAN_CO_LEADER))) {
+    if (target && (message.member.roles.cache.has(CLAN_LEADER) || message.member.roles.cache.has(CLAN_COLEADER))) {
       const data = fs.readFileSync('Clan.txt', 'utf8');
       const clanData = data.split('\n').map(line => line.split('/'));
       const clanRole = clanData.find(([clanId, clanTag]) => message.member.roles.cache.has(clanId));
