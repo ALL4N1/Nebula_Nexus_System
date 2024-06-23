@@ -70,6 +70,9 @@ client.on("ready", () =>
 );
 
 client.on("messageCreate", async (message) => {
+  
+  if (message.author.bot) return;
+  
   if (message.content.toLowerCase().includes("slm")) {
     message.reply("Mar7ba");
     console.log("slm");
@@ -84,8 +87,6 @@ client.on("messageCreate", async (message) => {
     message.reply("baz raw raged hathaka tayechlou msg fel prv");
     console.log("a7la nass");
   }
-
-  if (message.author.bot) return;
 
 //----------Change Name-------//
 
