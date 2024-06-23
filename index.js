@@ -144,7 +144,7 @@ if (message.channelId === CHANGE) {
 //----------Change Name-------//
 
   //----------Clan Add and Kick-------//
-  if (message.content.startsWith('dk clanadd')) {
+  if (message.content.startsWith('!dk clanadd')) {
     const target = message.mentions.members.first() || message.guild.members.cache.get(message.content.split(' ')[2]);
 
     if (target && (message.member.roles.cache.has(CLAN_LEADER) || message.member.roles.cache.has(CLAN_COLEADER))) {
@@ -176,7 +176,7 @@ if (message.channelId === CHANGE) {
     }
   }
 
-  if (message.content.startsWith('dk clankick')) {
+  if (message.content.startsWith('!dk clankick')) {
     const target = message.mentions.members.first() || message.guild.members.cache.get(message.content.split(' ')[2]);
 
     if (target && (message.member.roles.cache.has(CLAN_LEADER) || message.member.roles.cache.has(CLAN_COLEADER))) {
