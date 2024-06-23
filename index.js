@@ -143,6 +143,68 @@ if (message.channelId === CHANGE) {
 }
 //----------Change Name-------//
 
+  //----------Clan Add and Kick-------//
+  if (message.content.startsWith('dk clanadd')) {
+    const target = message.mentions.members.first() || message.guild.members.cache.get(message.content.split(' ')[2]);
+
+    if (target && (message.member.roles.cache.has(CLAN_LEADER) || message.member.roles.cache.has(CLAN_CO_LEADER))) {
+      if (target.roles.cache.has(CITIZEN)) {
+        const data = fs.readFileSync('Clan.txt', 'utf8');
+        const clanData = data.split('\n').map(line => line.split('/'));
+        const clanRole = clanData.find(([clanId, clanTag]) => message.member.roles.cache.has(clanId));
+
+        if (clanRole) {
+          const [clanId, clanTag] = clanRole;
+          await target.roles.add(clanId);
+
+          let name = target.nickname || target.user.username;
+          name = name.replace('𝗗𝗞 | ', '');
+          await target.setNickname(`${clanTag} | ${name}`);
+          message.react("✅");
+          console.log(`Clan role ${clanId} added and name changed to ${clanTag} | ${name}`);
+        } else {
+          message.react("❎");
+          console.log("No clan role found for the leader.");
+        }
+      } else {
+        message.react("❎");
+        console.log("Target does not have the Citizen role.");
+      }
+    } else {
+      message.react("❎");
+      console.log("Permission denied or target not found.");
+    }
+  }
+
+  if (message.content.startsWith('dk clankick')) {
+    const target = message.mentions.members.first() || message.guild.members.cache.get(message.content.split(' ')[2]);
+
+    if (target && (message.member.roles.cache.has(CLAN_LEADER) || message.member.roles.cache.has(CLAN_CO_LEADER))) {
+      const data = fs.readFileSync('Clan.txt', 'utf8');
+      const clanData = data.split('\n').map(line => line.split('/'));
+      const clanRole = clanData.find(([clanId, clanTag]) => message.member.roles.cache.has(clanId));
+
+      if (clanRole && target.roles.cache.has(clanRole[0])) {
+        await target.roles.remove(clanRole[0]);
+
+        let name = target.nickname || target.user.username;
+        name = name.replace(`${clanRole[1]} | `, '');
+        await target.setNickname(`𝗗𝗞 | ${name}`);
+        message.react("✅");
+        console.log(`Clan role ${clanRole[0]} removed and name changed to 𝗗𝗞 | ${name}`);
+      } else {
+        message.react("❎");
+        console.log("Target is not in the same clan or no clan role found.");
+      }
+    } else {
+      message.react("❎");
+      console.log("Permission denied or target not found.");
+    }
+  }
+});
+//----------Clan Add and Kick-------//
+
+
   //----------Stars-------//
   
     if (STARS.includes(message.channel.id)) {
