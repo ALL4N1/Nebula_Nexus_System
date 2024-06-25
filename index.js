@@ -161,9 +161,11 @@ if (message.channelId === CHANGE) {
           name = name.replace('𝗗𝗞 | ', '');
           await target.setNickname(`${clanTag} | ${name}`);
           message.react("✅");
+          message.reply("Enjoy Your Day :heart:")
           console.log(`Clan role ${clanId} added and name changed to ${clanTag} | ${name}`);
         } else {
           message.react("❎");
+          message.reply("")
           console.log("No clan role found for the leader.");
         }
       } else {
