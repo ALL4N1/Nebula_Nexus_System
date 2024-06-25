@@ -145,7 +145,7 @@ if (message.channelId === CHANGE) {
 //----------Change Name-------//
 
   //----------Clan Add and Kick-------//
-    if (message.content.startsWith('!dk clanadd')) {
+ if (message.content.startsWith('!dk clanadd')) {
     const target = message.mentions.members.first() || message.guild.members.cache.get(message.content.split(' ')[2]);
 
     if (target && (message.member.roles.cache.has(CLAN_LEADER) || message.member.roles.cache.has(CLAN_COLEADER))) {
@@ -156,6 +156,15 @@ if (message.channelId === CHANGE) {
 
         if (clanRole) {
           const [clanId, clanTag] = clanRole;
+
+          // Check if target is already in a clan
+          const targetClanRole = clanData.find(([clanId]) => target.roles.cache.has(clanId));
+          if (targetClanRole) {
+            message.react("❎");
+            message.reply("The target is already in a clan.");
+            console.log("Target is already in a clan.");
+            return;
+          }
 
           // Check if the clan has reached the limit
           const clanMembers = message.guild.members.cache.filter(member => member.roles.cache.has(clanId)).size;
