@@ -90,61 +90,60 @@ client.on("messageCreate", async (message) => {
     console.log("a7la nass");
   }
 
-//----------Change Name-------//
+  //----------Change Name-------//
 
-if (message.channelId === CHANGE) {
-  if (message.content.toLowerCase() === "reset") {
-    try {
+  if (message.channelId === CHANGE) {
+    if (message.content.toLowerCase() === "reset") {
+      try {
+        await message.member.setNickname(null);
+        const name = message.member.nickname || message.member.user.username;
 
-      await message.member.setNickname(null);
-      const name = message.member.nickname || message.member.user.username;
+        const data = fs.readFileSync('Clan.txt', 'utf8');
+        const clanData = data.split('\n').map(line => line.split('/'));
+        const clanRole = clanData.find(([clanId, clanTag]) => message.member.roles.cache.has(clanId));
 
-      const data = fs.readFileSync('Clan.txt', 'utf8');
-      const clanData = data.split('\n').map(line => line.split('/'));
-      const clanRole = clanData.find(([clanId, clanTag]) => message.member.roles.cache.has(clanId));
+        if (clanRole) {
+          const [, clanTag] = clanRole;
+          await message.member.setNickname(`${clanTag} | ${name}`);
+          console.log("Name Changed with Clan Tag");
+        } else {
+          await message.member.setNickname(`𝗗𝗞 | ${name}`);
+          console.log("Name Changed with Server Tag");
+        }
 
-      if (clanRole) {
-        const [, clanTag] = clanRole;
-        await message.member.setNickname(`${clanTag} | ${name}`);
-        console.log("Name Changed with Clan Tag");
-      } else {
-        await message.member.setNickname(`𝗗𝗞 | ${name}`);
-        console.log("Name Changed with Server Tag");
+        message.react("✅");
+        console.log("Name Changed");
+      } catch (error) {
+        console.error(error);
+        message.react("❎");
+        console.log("Name Not Changed");
       }
+    } else {
+      try {
+        const data = fs.readFileSync('Clan.txt', 'utf8');
+        const clanData = data.split('\n').map(line => line.split('/'));
+        const clanRole = clanData.find(([clanId, clanTag]) => message.member.roles.cache.has(clanId));
+        if (clanRole) {
+          const [, clanTag] = clanRole;
+          await message.member.setNickname(`${clanTag} | ${message.content}`);
+          console.log("Name Changed with Clan Tag");
+        } else {
+          await message.member.setNickname(`𝗗𝗞 | ${message.content}`);
+          console.log("Name Changed with Server Tag");
+        }
 
-      message.react("✅");
-      console.log("Name Changed");
-    } catch (error) {
-      console.error(error);
-      message.react("❎");
-      console.log("Name Not Changed");
-    }
-  } else {
-    try {
-      const data = fs.readFileSync('Clan.txt', 'utf8');
-      const clanData = data.split('\n').map(line => line.split('/'));
-      const clanRole = clanData.find(([clanId, clanTag]) => message.member.roles.cache.has(clanId));
-      if (clanRole) {
-        const [, clanTag] = clanRole;
-        await message.member.setNickname(`${clanTag} | ${message.content}`);
-        console.log("Name Changed with Clan Tag");
-      } else {
-        await message.member.setNickname(`𝗗𝗞 | ${message.content}`);
-        console.log("Name Changed with Server Tag");
+        message.react("✅");
+      } catch (error) {
+        console.error(error);
+        message.react("❎");
+        console.log("Name Not Changed");
       }
-
-      message.react("✅");
-    } catch (error) {
-      console.error(error);
-      message.react("❎");
-      console.log("Name Not Changed");
     }
   }
-}
-//----------Change Name-------//
+  //----------Change Name-------//
 
   //----------Clan Add and Kick-------//
-   if (message.content.startsWith('!dk clanadd')) {
+  if (message.content.startsWith('!dk clanadd')) {
     const target = message.mentions.members.first() || message.guild.members.cache.get(message.content.split(' ')[2]);
 
     if (target && (message.member.roles.cache.has(CLAN_LEADER) || message.member.roles.cache.has(CLAN_COLEADER))) {
@@ -224,8 +223,7 @@ if (message.channelId === CHANGE) {
       console.log("Permission denied or target not found.");
     }
   }
-//----------Clan Add and Kick-------//
-
+  //----------Clan Add and Kick-------//
 
 
   //----------Stars-------//
