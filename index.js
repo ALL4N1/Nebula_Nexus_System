@@ -165,7 +165,6 @@ if (message.channelId === CHANGE) {
           console.log(`Clan role ${clanId} added and name changed to ${clanTag} | ${name}`);
         } else {
           message.react("❎");
-          message.reply("")
           console.log("No clan role found for the leader.");
         }
       } else {
