@@ -207,10 +207,12 @@ if (message.channelId === CHANGE) {
 
   //----------Stars-------//
   
-    if (STARS.includes(message.channel.id)) {
-      message.react("⭐")
-      console.log("Star Has Been Add");
-    }
+client.on('message', (message) => {
+  if (STARS.includes(message.channel.id)) {
+    message.react("⭐");
+    console.log("Star Has Been Added");
+  }
+});
   
 
   //----------Stars-------//
