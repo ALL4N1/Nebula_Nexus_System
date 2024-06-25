@@ -90,57 +90,58 @@ client.on("messageCreate", async (message) => {
     console.log("a7la nass");
   }
 
-  //----------Change Name-------//
+//----------Change Name-------//
 
-  if (message.channelId === CHANGE) {
-    if (message.content.toLowerCase() === "reset") {
-      try {
-        await message.member.setNickname(null);
-        const name = message.member.nickname || message.member.user.username;
+if (message.channelId === CHANGE) {
+  if (message.content.toLowerCase() === "reset") {
+    try {
 
-        const data = fs.readFileSync('Clan.txt', 'utf8');
-        const clanData = data.split('\n').map(line => line.split('/'));
-        const clanRole = clanData.find(([clanId, clanTag]) => message.member.roles.cache.has(clanId));
+      await message.member.setNickname(null);
+      const name = message.member.nickname || message.member.user.username;
 
-        if (clanRole) {
-          const [, clanTag] = clanRole;
-          await message.member.setNickname(`${clanTag} | ${name}`);
-          console.log("Name Changed with Clan Tag");
-        } else {
-          await message.member.setNickname(`𝗗𝗞 | ${name}`);
-          console.log("Name Changed with Server Tag");
-        }
+      const data = fs.readFileSync('Clan.txt', 'utf8');
+      const clanData = data.split('\n').map(line => line.split('/'));
+      const clanRole = clanData.find(([clanId, clanTag]) => message.member.roles.cache.has(clanId));
 
-        message.react("✅");
-        console.log("Name Changed");
-      } catch (error) {
-        console.error(error);
-        message.react("❎");
-        console.log("Name Not Changed");
+      if (clanRole) {
+        const [, clanTag] = clanRole;
+        await message.member.setNickname(`${clanTag} | ${name}`);
+        console.log("Name Changed with Clan Tag");
+      } else {
+        await message.member.setNickname(`𝗗𝗞 | ${name}`);
+        console.log("Name Changed with Server Tag");
       }
-    } else {
-      try {
-        const data = fs.readFileSync('Clan.txt', 'utf8');
-        const clanData = data.split('\n').map(line => line.split('/'));
-        const clanRole = clanData.find(([clanId, clanTag]) => message.member.roles.cache.has(clanId));
-        if (clanRole) {
-          const [, clanTag] = clanRole;
-          await message.member.setNickname(`${clanTag} | ${message.content}`);
-          console.log("Name Changed with Clan Tag");
-        } else {
-          await message.member.setNickname(`𝗗𝗞 | ${message.content}`);
-          console.log("Name Changed with Server Tag");
-        }
 
-        message.react("✅");
-      } catch (error) {
-        console.error(error);
-        message.react("❎");
-        console.log("Name Not Changed");
+      message.react("✅");
+      console.log("Name Changed");
+    } catch (error) {
+      console.error(error);
+      message.react("❎");
+      console.log("Name Not Changed");
+    }
+  } else {
+    try {
+      const data = fs.readFileSync('Clan.txt', 'utf8');
+      const clanData = data.split('\n').map(line => line.split('/'));
+      const clanRole = clanData.find(([clanId, clanTag]) => message.member.roles.cache.has(clanId));
+      if (clanRole) {
+        const [, clanTag] = clanRole;
+        await message.member.setNickname(`${clanTag} | ${message.content}`);
+        console.log("Name Changed with Clan Tag");
+      } else {
+        await message.member.setNickname(`𝗗𝗞 | ${message.content}`);
+        console.log("Name Changed with Server Tag");
       }
+
+      message.react("✅");
+    } catch (error) {
+      console.error(error);
+      message.react("❎");
+      console.log("Name Not Changed");
     }
   }
-  //----------Change Name-------//
+}
+//----------Change Name-------//
 
   //----------Clan Add and Kick-------//
   if (message.content.startsWith('!dk clanadd')) {
@@ -154,36 +155,24 @@ client.on("messageCreate", async (message) => {
 
         if (clanRole) {
           const [clanId, clanTag] = clanRole;
-          // Check if target is already in another clan
-          const targetClan = clanData.find(([clanId]) => target.roles.cache.has(clanId));
-          if (targetClan) {
-            message.react("❎");
-            message.reply("The target is already in another clan.");
-            console.log("Target is already in another clan.");
-            return;
-          }
-
           await target.roles.add(clanId);
 
           let name = target.nickname || target.user.username;
           name = name.replace('𝗗𝗞 | ', '');
           await target.setNickname(`${clanTag} | ${name}`);
           message.react("✅");
-          message.reply("Enjoy Your Day :heart:");
+          message.reply("Enjoy Your Day :heart:")
           console.log(`Clan role ${clanId} added and name changed to ${clanTag} | ${name}`);
         } else {
           message.react("❎");
-          message.reply("No clan role found for the leader.");
           console.log("No clan role found for the leader.");
         }
       } else {
         message.react("❎");
-        message.reply("The target does not have the Citizen role.");
         console.log("Target does not have the Citizen role.");
       }
     } else {
       message.react("❎");
-      message.reply("Permission denied or target not found.");
       console.log("Permission denied or target not found.");
     }
   }
@@ -196,34 +185,25 @@ client.on("messageCreate", async (message) => {
       const clanData = data.split('\n').map(line => line.split('/'));
       const clanRole = clanData.find(([clanId, clanTag]) => message.member.roles.cache.has(clanId));
 
-      if (clanRole) {
-        const [clanId, clanTag] = clanRole;
-        if (target.roles.cache.has(clanId)) {
-          await target.roles.remove(clanId);
+      if (clanRole && target.roles.cache.has(clanRole[0])) {
+        await target.roles.remove(clanRole[0]);
 
-          let name = target.nickname || target.user.username;
-          name = name.replace(`${clanTag} | `, '');
-          await target.setNickname(`𝗗𝗞 | ${name}`);
-          message.react("✅");
-          message.reply("Member successfully kicked from the clan.");
-          console.log(`Clan role ${clanRole[0]} removed and name changed to 𝗗𝗞 | ${name}`);
-        } else {
-          message.react("❎");
-          message.reply("The target is not a member of your clan.");
-          console.log("Target is not in the same clan.");
-        }
+        let name = target.nickname || target.user.username;
+        name = name.replace(`${clanRole[1]} | `, '');
+        await target.setNickname(`𝗗𝗞 | ${name}`);
+        message.react("✅");
+        console.log(`Clan role ${clanRole[0]} removed and name changed to 𝗗𝗞 | ${name}`);
       } else {
         message.react("❎");
-        message.reply("No clan role found for the leader.");
-        console.log("No clan role found for the leader.");
+        console.log("Target is not in the same clan or no clan role found.");
       }
     } else {
       message.react("❎");
-      message.reply("Permission denied or target not found.");
       console.log("Permission denied or target not found.");
     }
   }
-  //----------Clan Add and Kick-------//
+});
+//----------Clan Add and Kick-------//
 
 
   //----------Stars-------//
