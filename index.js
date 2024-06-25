@@ -145,7 +145,7 @@ if (message.channelId === CHANGE) {
 //----------Change Name-------//
 
   //----------Clan Add and Kick-------//
-  if (message.content.startsWith('!dk clanadd')) {
+    if (message.content.startsWith('!dk clanadd')) {
     const target = message.mentions.members.first() || message.guild.members.cache.get(message.content.split(' ')[2]);
 
     if (target && (message.member.roles.cache.has(CLAN_LEADER) || message.member.roles.cache.has(CLAN_COLEADER))) {
@@ -156,13 +156,23 @@ if (message.channelId === CHANGE) {
 
         if (clanRole) {
           const [clanId, clanTag] = clanRole;
+
+          // Check if the clan has reached the limit
+          const clanMembers = message.guild.members.cache.filter(member => member.roles.cache.has(clanId)).size;
+          if (clanMembers >= CLAN_LIMIT) {
+            message.react("❎");
+            message.reply("Your clan has reached the member limit.");
+            console.log("Clan member limit reached.");
+            return;
+          }
+
           await target.roles.add(clanId);
 
           let name = target.nickname || target.user.username;
           name = name.replace('𝗗𝗞 | ', '');
           await target.setNickname(`${clanTag} | ${name}`);
           message.react("✅");
-          message.reply("Enjoy Your Day :heart:")
+          message.reply("Enjoy Your Day :heart:");
           console.log(`Clan role ${clanId} added and name changed to ${clanTag} | ${name}`);
         } else {
           message.react("❎");
