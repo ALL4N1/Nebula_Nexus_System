@@ -254,70 +254,69 @@ client.on('message', (message) => {
   //----------Punishments-------//
   const prefix = "DK";
   
+  client.on('messageCreate', async (message) => {
   if (!message.content.toUpperCase().startsWith(prefix)) return;
 
-  else{
-    const args = message.content.slice(prefix.length).trim().split(/ +/);
-    const command = args.shift().toLowerCase();
+  const args = message.content.slice(prefix.length).trim().split(/ +/);
+  const command = args.shift().toLowerCase();
 
-    if(!(message.member.roles.cache.has(REPORT_PERMISSION))){
-      message.delete();
-    }
-      //----------Warn-------//
-    
-    if (command.startsWith("warn")) {
-  async function warnMember() {
-    let target;
-    let reason;
-
-    const mention = message.mentions.members.first();
-    if (mention) {
-      target = mention.id;
-      reason = args.slice(1).join(" ").trim();
-    } else {
-      target = args.shift();
-      if (!target) {
-        return message.reply(
-          "3awed el command w zid tagui w ilal ekteb el id ta3 el member li bech twarnih w tansach t7ot el reason.",
-        );
-      }
-      reason = args.join(" ").trim();
-    }
-
-    if (!reason) {
-      return message.reply("3awed el command w zid el reason ta3 el warn.");
-    }
-
-    try {
-      const user = await client.users.fetch(target);
-      await message.reply(`Successfully warned <@${user.id}> for: ${reason}`);
-      await user.send(`Jak warn, reason: ${reason}`);
-      
-      let punish = "Warn";
-      let staff = message.member.id;
-      let member = target;
-      let rs = reason;
-      let duration = "---";
-
-      let save = `${punish}/${staff}/${member}/${rs}/${duration}.`;
-      console.log(save);
-      fs.appendFile('Logs.txt', save + '\n', (err) => {
-        if (err) {
-          console.error("Failed to append to log file:", err);
-        }
-      });
-    } catch (error) {
-      console.error(`Failed to send warning to ${target}:`, error);
-      message.reply(
-        "Warn t3adit ema member prv mta3ou msaker majahouch msg.",
-      );
-    }
+  if (!message.member.roles.cache.has(REPORT_PERMISSION)) {
+    message.delete();
+    return;
   }
 
-  warnMember();
-}
+  if (command.startsWith("warn")) {
+    async function warnMember() {
+      let target;
+      let reason;
 
-};
+      const mention = message.mentions.members.first();
+      if (mention) {
+        target = mention.id;
+        reason = args.slice(1).join(" ").trim();
+      } else {
+        target = args.shift();
+        if (!target) {
+          return message.reply(
+            "3awed el command w zid tagui w ilal ekteb el id ta3 el member li bech twarnih w tansach t7ot el reason.",
+          );
+        }
+        reason = args.join(" ").trim();
+      }
+
+      if (!reason) {
+        return message.reply("3awed el command w zid el reason ta3 el warn.");
+      }
+
+      try {
+        const user = await client.users.fetch(target);
+        await message.reply(`Successfully warned <@${user.id}> for: ${reason}`);
+        await user.send(`Jak warn, reason: ${reason}`);
+        
+        let punish = "Warn";
+        let staff = message.member.id;
+        let member = target;
+        let rs = reason;
+        let duration = "---";
+
+        let save = `${punish}/${staff}/${member}/${rs}/${duration}.`;
+        console.log(save);
+        fs.appendFile('Logs.txt', save + '\n', (err) => {
+          if (err) {
+            console.error("Failed to append to log file:", err);
+          }
+        });
+      } catch (error) {
+        console.error(`Failed to send warning to ${target}:`, error);
+        message.reply(
+          "Warn t3adit ema member prv mta3ou msaker majahouch msg.",
+        );
+      }
+    }
+
+    await warnMember();
+  }
+});
 
   //----------Report_New-------//
 
