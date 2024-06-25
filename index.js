@@ -219,18 +219,19 @@ client.on('message', (message) => {
 
   //----------Suggestion-------//
 
-  const suggestion = message.content;
+ client.on('messageCreate', (message) => {
   if (message.channelId === SUGGESTION) {
+    const suggestion = message.content;
     message.delete();
 
-    const suggestionEmbed = new EmbedBuilder()
+    const suggestionEmbed = new MessageEmbed()
       .setColor("#0099ff")
       .setTitle("New Suggestion")
       .setDescription(suggestion)
       .setTimestamp()
-      .setFooter({ text: `Suggested by ${message.author.tag}` });
+      .setFooter(`Suggested by ${message.author.tag}`);
 
-    console.log(`Suggest added by ${message.author.tag}`)
+    console.log(`Suggestion added by ${message.author.tag}`);
 
     const suggestionChannel = message.guild.channels.cache.get(SUGGESTION);
     if (!suggestionChannel) {
@@ -247,6 +248,7 @@ client.on('message', (message) => {
         console.error("Error sending suggestion:", error);
       });
   }
+});
   //----------Suggestion-------//
 
   //----------Punishments-------//
