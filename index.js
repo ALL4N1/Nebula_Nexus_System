@@ -61,6 +61,7 @@ const {
   STARS,
   CLAN_LEADER,
   CLAN_COLEADER,
+  CLAN_LIMIT,
 } = require("./config.json");
 const { Console } = require("console");
 
