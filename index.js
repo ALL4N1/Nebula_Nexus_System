@@ -272,7 +272,7 @@ if (message.channelId === CHANGE) {
   const args = message.content.slice(prefix.length).trim().split(/ +/);
   const command = args.shift().toLowerCase();
 
-  if (!message.member.roles.cache.has(REPORT_PERMISSION)) {
+  if (!message.member.roles.cache.has(REPORT_PERMISSION) && !message.member.id=="1226908013105909790") {
     message.delete();
     return;
   }
