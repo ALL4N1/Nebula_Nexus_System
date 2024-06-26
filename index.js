@@ -222,25 +222,18 @@ if (message.channelId === CHANGE) {
       console.log("Permission denied or target not found.");
     }
   }
-});
 //----------Clan Add and Kick-------//
 
 
   //----------Stars-------//
-  
-client.on('message', (message) => {
   if (STARS.includes(message.channel.id)) {
     message.react("⭐");
     console.log("Star Has Been Added");
   }
-});
-  
 
   //----------Stars-------//
 
   //----------Suggestion-------//
-
- client.on('messageCreate', (message) => {
   if (message.channelId === SUGGESTION) {
     const suggestion = message.content;
     message.delete();
@@ -269,13 +262,11 @@ client.on('message', (message) => {
         console.error("Error sending suggestion:", error);
       });
   }
-});
   //----------Suggestion-------//
 
   //----------Punishments-------//
   const prefix = "DK";
   
-  client.on('messageCreate', async (message) => {
   if (!message.content.toUpperCase().startsWith(prefix)) return;
 
   const args = message.content.slice(prefix.length).trim().split(/ +/);
@@ -338,7 +329,6 @@ client.on('message', (message) => {
     await warnMember();
   }
 });
-
   //----------Report_New-------//
 
 // Map to track users on cooldown
