@@ -235,33 +235,33 @@ if (message.channelId === CHANGE) {
 
   //----------Suggestion-------//
   if (message.channelId === SUGGESTION) {
-    const suggestion = message.content;
-    message.delete();
+  const suggestion = message.content;
+  message.delete();
 
-    const suggestionEmbed = new MessageEmbed()
-      .setColor("#0099ff")
-      .setTitle("New Suggestion")
-      .setDescription(suggestion)
-      .setTimestamp()
-      .setFooter(`Suggested by ${message.author.tag}`);
+  const suggestionEmbed = new EmbedBuilder()
+    .setColor("#0099ff")
+    .setTitle("New Suggestion")
+    .setDescription(suggestion)
+    .setTimestamp()
+    .setFooter({ text: `Suggested by ${message.author.tag}` });
 
-    console.log(`Suggestion added by ${message.author.tag}`);
+  console.log(`Suggestion added by ${message.author.tag}`);
 
-    const suggestionChannel = message.guild.channels.cache.get(SUGGESTION);
-    if (!suggestionChannel) {
-      return console.error("Suggestion channel not found.");
-    }
-
-    suggestionChannel
-      .send({ embeds: [suggestionEmbed] })
-      .then((sentMessage) => {
-        sentMessage.react("👍");
-        sentMessage.react("👎");
-      })
-      .catch((error) => {
-        console.error("Error sending suggestion:", error);
-      });
+  const suggestionChannel = message.guild.channels.cache.get(SUGGESTION);
+  if (!suggestionChannel) {
+    return console.error("Suggestion channel not found.");
   }
+
+  suggestionChannel
+    .send({ embeds: [suggestionEmbed] })
+    .then((sentMessage) => {
+      sentMessage.react("👍");
+      sentMessage.react("👎");
+    })
+    .catch((error) => {
+      console.error("Error sending suggestion:", error);
+    });
+}
   //----------Suggestion-------//
 
   //----------Punishments-------//
