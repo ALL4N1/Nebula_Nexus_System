@@ -517,40 +517,5 @@ client.on('voiceStateUpdate', (oldState, newState) => {
 
 //--------------Temp_VC_Cleanup--------------//
 
-//-------------Visitor_Role_Check------------//
-
-const GUILD_ID = '1226979436143050784';
-const ROLE_ID = '1227087978741108778';
-
-client.on('guildMemberAdd', member => {
-  if (member.guild.id === GUILD_ID) {
-    if (member.user.bot) {
-      console.log(`Bot joined: ${member.user.tag}, not assigning role.`);
-      return;
-    }
-
-    console.log(`New member joined: ${member.user.tag}`);
-    setTimeout(async () => {
-      const role = member.guild.roles.cache.get(ROLE_ID);
-      if (!role) {
-        console.error('Role not found');
-        return;
-      }
-
-      if (!member.roles.cache.has(ROLE_ID)) {
-        try {
-          await member.roles.add(role);
-          console.log(`Assigned role ${role.name} to ${member.user.tag}`);
-        } catch (error) {
-          console.error(`Failed to assign role to ${member.user.tag}:`, error);
-        }
-      } else {
-        console.log(`Member ${member.user.tag} already has the role`);
-      }
-    }, 5000); // 5 seconds
-  }
-});
-
-//-------------Visitor_Role_Check------------//
 
 client.login(process.env.TOKEN);
