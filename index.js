@@ -210,9 +210,9 @@ if (message.channelId === CHANGE) {
 
         let name = target.nickname || target.user.username;
         name = name.replace(`${clanRole[1]} | `, '');
-        await target.setNickname(`𝗗𝗞 | ${name}`);
+        await target.setNickname(`${name}`);
         message.react("✅");
-        console.log(`Clan role ${clanRole[0]} removed and name changed to 𝗗𝗞 | ${name}`);
+        console.log(`Clan role ${clanRole[0]} removed and name changed to ${name}`);
       } else {
         message.react("❎");
         console.log("Target is not in the same clan or no clan role found.");
