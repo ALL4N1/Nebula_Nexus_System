@@ -109,8 +109,8 @@ if (message.channelId === CHANGE) {
         await message.member.setNickname(`${clanTag} | ${name}`);
         console.log("Name Changed with Clan Tag");
       } else {
-        await message.member.setNickname(`𝗗𝗞 | ${name}`);
-        console.log("Name Changed with Server Tag");
+        await message.member.setNickname(Null);
+        console.log("Name Changed without tag");
       }
 
       message.react("✅");
@@ -130,8 +130,8 @@ if (message.channelId === CHANGE) {
         await message.member.setNickname(`${clanTag} | ${message.content}`);
         console.log("Name Changed with Clan Tag");
       } else {
-        await message.member.setNickname(`𝗗𝗞 | ${message.content}`);
-        console.log("Name Changed with Server Tag");
+        await message.member.setNickname(`${message.content}`);
+        console.log("Name Changed without tag");
       }
 
       message.react("✅");
