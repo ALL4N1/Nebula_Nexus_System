@@ -552,17 +552,16 @@ client.on('guildMemberAdd', member => {
         }
       } else {
         console.log(`Member ${member.user.tag} already has the role`);
-      }
-      if (member.roles.cache.has(citizenID)) {
-        try {
-          await member.roles.remove(citizenID);
-          console.log(`Removed role ${citizenID.name} from ${member.user.tag}`);
-        } catch (error) {
-          console.error(`Failed to remove role from ${member.user.tag}:`, error);
-        }
-      } else {
-        console.log(`Member ${member.user.tag} don't even have the role`);
-      }
+     if (member.roles.cache.has(citizenID)) {
+  try {
+    await member.roles.remove(citizenID);
+    console.log(`Removed role ${citizenID.name} from ${member.user.tag}`);
+  } catch (error) {
+    console.error(`Failed to remove role from ${member.user.tag}:`, error);
+  }
+} else {
+  console.log(`Member ${member.user.tag} don't even have the role`);
+}
     }, 5000); // 5 seconds
   }
 });
