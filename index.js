@@ -521,49 +521,55 @@ client.on('voiceStateUpdate', (oldState, newState) => {
 
 //-------------Visitor_Role_Check------------//
 
-client.on('guildMemberAdd', member => {
+client.on('guildMemberAdd', async member => {
   if (member.guild.id === GUILD_ID) {
     if (member.user.bot) {
-      console.log(`Bot joined: ${member.user.tag}, not assigning role.`);
+      console.log(`Bot joined: ${member.user.tag}, not assigning roles.`);
       return;
     }
 
     console.log(`New member joined: ${member.user.tag}`);
-    setTimeout(async () => {
-      const visitID = member.guild.roles.cache.get(VISITOR);
-      const citizenID = member.guild.roles.cache.get(CITIZEN);
-      if ((!visitID) || (!citizenID)) {
-        if (!visitID) {
-          console.error('Visitor Role not found');
-          return;
-        } else if (!citizenID) {
-          console.error('Citizen Role not found');
-          return;
-        }
-      }
 
-      if (!member.roles.cache.has(VISITOR)) {
-        try {
-          await member.roles.add(visitID);
-          console.log(`Assigned role ${visitID.name} to ${member.user.tag}`);
-        } catch (error) {
-          console.error(`Failed to assign role to ${member.user.tag}:`, error);
-        }
-      } else {
-        console.log(`Member ${member.user.tag} already has the role`);
-      }
+    const visitID = member.guild.roles.cache.get(VISITOR);
+    const citizenID = member.guild.roles.cache.get(CITIZEN);
 
-      if (member.roles.cache.has(citizenID)) {
-        try {
-          await member.roles.remove(citizenID);
-          console.log(`Removed role ${citizenID.name} from ${member.user.tag}`);
-        } catch (error) {
-          console.error(`Failed to remove role from ${member.user.tag}:`, error);
-        }
-      } else {
-        console.log(`Member ${member.user.tag} don't even have the role`);
+    if (!visitID || !citizenID) {
+      console.error('Roles not found.');
+      return;
+    }
+
+    // Log current roles for debugging
+    console.log(`Current roles for ${member.user.tag}:`, member.roles.cache.map(role => role.name));
+
+    // Wait for a brief moment (adjust timing as needed)
+    await new Promise(resolve => setTimeout(resolve, 2000));
+
+    // Check and assign visitor role if not already assigned
+    if (!member.roles.cache.has(visitID.id)) {
+      try {
+        await member.roles.add(visitID);
+        console.log(`Assigned role ${visitID.name} to ${member.user.tag}`);
+      } catch (error) {
+        console.error(`Failed to assign role to ${member.user.tag}:`, error);
       }
-    }, 5000); // 5 seconds
+    } else {
+      console.log(`Member ${member.user.tag} already has the role ${visitID.name}`);
+    }
+
+    // Check and remove citizen role if assigned
+    if (member.roles.cache.has(citizenID.id)) {
+      try {
+        await member.roles.remove(citizenID);
+        console.log(`Removed role ${citizenID.name} from ${member.user.tag}`);
+      } catch (error) {
+        console.error(`Failed to remove role from ${member.user.tag}:`, error);
+      }
+    } else {
+      console.log(`Member ${member.user.tag} doesn't have the role ${citizenID.name}`);
+    }
+
+    // Log updated roles after role management
+    console.log(`Updated roles for ${member.user.tag}:`, member.roles.cache.map(role => role.name));
   }
 });
 
