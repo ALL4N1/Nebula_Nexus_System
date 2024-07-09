@@ -573,4 +573,4 @@ client.on('guildMemberAdd', async member => {
 //-------------Visitor_Role_Check------------//
 
 
-client.login(process.env.TOKEN);
+client.login(process.env["TOKEN"]);
