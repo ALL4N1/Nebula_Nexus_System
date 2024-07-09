@@ -106,7 +106,7 @@ if (message.channelId === CHANGE) {
         await message.member.setNickname(`${clanTag} | ${name}`);
         console.log("Name Changed with Clan Tag");
       } else {
-        await message.member.setNickname(Null);
+        await message.member.setNickname(null);
         console.log("Name Changed without tag");
       }
 
