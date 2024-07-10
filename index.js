@@ -87,7 +87,6 @@ client.on("messageCreate", async (message) => {
     console.log("a7la nass");
   }
 
-
 //----------Change Name-------//
 
 if (message.channelId === CHANGE) {
@@ -571,6 +570,35 @@ client.on('guildMemberAdd', async member => {
 
 
 //-------------Visitor_Role_Check------------//
+
+//----------Quarantine Check-------//
+// Path to the file storing quarantined user IDs
+const quarantinedUsersFile = './quarantinedUsers.json';
+let quarantinedUsers = [];
+
+// Load quarantined users from the file
+if (fs.existsSync(quarantinedUsersFile)) {
+  quarantinedUsers = JSON.parse(fs.readFileSync(quarantinedUsersFile));
+}
+
+// Event listener for when a member leaves the server
+client.on('guildMemberRemove', member => {
+  if (member.roles.cache.some(role => role.name === 'Quarantined')) {
+    quarantinedUsers.push(member.id);
+    fs.writeFileSync(quarantinedUsersFile, JSON.stringify(quarantinedUsers));
+  }
+});
+
+// Event listener for when a member joins the server
+client.on('guildMemberAdd', member => {
+  if (quarantinedUsers.includes(member.id)) {
+    const quarantineRole = member.guild.roles.cache.find(role => role.name === 'Quarantined');
+    if (quarantineRole) {
+      member.roles.add(quarantineRole);
+    }
+  }
+});
+//----------Quarantine Check-------//
 
 
 client.login(process.env["TOKEN"]);
