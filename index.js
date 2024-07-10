@@ -583,7 +583,7 @@ if (fs.existsSync(quarantinedUsersFile)) {
 
 // Event listener for when a member leaves the server
 client.on('guildMemberRemove', member => {
-  if (member.roles.cache.some(role => role.name === 'Quarantined')) {
+  if (member.roles.cache.some(role => role.id === '1228149587999588424')) {
     quarantinedUsers.push(member.id);
     fs.writeFileSync(quarantinedUsersFile, JSON.stringify(quarantinedUsers));
   }
@@ -592,7 +592,7 @@ client.on('guildMemberRemove', member => {
 // Event listener for when a member joins the server
 client.on('guildMemberAdd', member => {
   if (quarantinedUsers.includes(member.id)) {
-    const quarantineRole = member.guild.roles.cache.find(role => role.name === 'Quarantined');
+    const quarantineRole = member.guild.roles.cache.find(role => role.id === '1228149587999588424');
     if (quarantineRole) {
       member.roles.add(quarantineRole);
     }
