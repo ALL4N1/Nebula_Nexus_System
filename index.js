@@ -1,5 +1,6 @@
 const http = require('http');
 const fs = require('fs');
+const path = require('path');
 
 const port = process.env.PORT || 8080;
 const server = http.createServer((req, res) => {
@@ -68,10 +69,64 @@ const { Console } = require("console");
 
 //---------------------------------------------//
 
+// Path to the file storing quarantined user IDs
+const quarantinedUsersFile = path.resolve(__dirname, 'quarantinedUsers.json');
+let quarantinedUsers = [];
+
+// Load quarantined users from the file or initialize the file
+try {
+  if (fs.existsSync(quarantinedUsersFile)) {
+    const data = fs.readFileSync(quarantinedUsersFile, 'utf8');
+    if (data) {
+      quarantinedUsers = JSON.parse(data);
+    } else {
+      fs.writeFileSync(quarantinedUsersFile, JSON.stringify([]));
+    }
+  } else {
+    fs.writeFileSync(quarantinedUsersFile, JSON.stringify([]));
+  }
+} catch (error) {
+  console.error('Error loading quarantined users:', error);
+  fs.writeFileSync(quarantinedUsersFile, JSON.stringify([]));
+}
+
+// Function to check and update the quarantine status of all members
+async function updateQuarantineStatus(guild) {
+  try {
+    const members = await guild.members.fetch();
+    members.forEach(member => {
+      if (member.roles.cache.some(role => role.id === QUARANTINE)) {
+        if (!quarantinedUsers.includes(member.id)) {
+          quarantinedUsers.push(member.id);
+        }
+      } else {
+        const index = quarantinedUsers.indexOf(member.id);
+        if (index > -1) {
+          quarantinedUsers.splice(index, 1);
+        }
+      }
+    });
+    fs.writeFileSync(quarantinedUsersFile, JSON.stringify(quarantinedUsers));
+  } catch (error) {
+    console.error('Error updating quarantine status:', error);
+  }
+}
+
+// Command prefix and authorized user ID
+const commandPrefix = 'dk';
+const authorizedUserId = '1226908013105909790';
+
+
+//---------------------------------------------//
+
 console.log("Project is running");
-client.on("ready", () =>
-  console.log(`logged in as - ${client.user.username} - `),
-);
+client.once('ready', async () => {
+  console.log(`logged in as - ${client.user.username} - `)
+  const guild = client.guilds.cache.get('1228499075570077747');
+  if (guild) {
+    await updateQuarantineStatus(guild);
+  }
+});
 
 client.on("messageCreate", async (message) => {
   
@@ -572,33 +627,88 @@ client.on('guildMemberAdd', async member => {
 //-------------Visitor_Role_Check------------//
 
 //----------Quarantine Check-------//
-// Path to the file storing quarantined user IDs
-const quarantinedUsersFile = './quarantinedUsers.json';
-let quarantinedUsers = [];
-
-// Load quarantined users from the file
-if (fs.existsSync(quarantinedUsersFile)) {
-  quarantinedUsers = JSON.parse(fs.readFileSync(quarantinedUsersFile));
-}
 
 // Event listener for when a member leaves the server
 client.on('guildMemberRemove', member => {
-  if (member.roles.cache.some(role => role.id === '1228149587999588424')) {
-    quarantinedUsers.push(member.id);
-    fs.writeFileSync(quarantinedUsersFile, JSON.stringify(quarantinedUsers));
+  if (member.roles.cache.some(role => role.id === QUARANTINE)) {
+    if (!quarantinedUsers.includes(member.id)) {
+      quarantinedUsers.push(member.id);
+      fs.writeFileSync(quarantinedUsersFile, JSON.stringify(quarantinedUsers));
+    }
   }
 });
 
 // Event listener for when a member joins the server
-client.on('guildMemberAdd', member => {
+client.on('guildMemberAdd', async member => {
   if (quarantinedUsers.includes(member.id)) {
-    const quarantineRole = member.guild.roles.cache.find(role => role.id === '1228149587999588424');
+    const quarantineRole = member.guild.roles.cache.find(role => role.id === QUARANTINE);
     if (quarantineRole) {
-      member.roles.add(quarantineRole);
+      try {
+        // Remove all roles from the member
+        await member.roles.set([]);
+        // Add the quarantine role
+        await member.roles.add(quarantineRole);
+      } catch (error) {
+        console.error('Error updating roles for member:', error);
+      }
     }
   }
 });
-//----------Quarantine Check-------//
 
+// Command handler
+client.on('messageCreate', async message => {
+  if (!message.content.startsWith(commandPrefix) || message.author.bot) return;
+
+  const args = message.content.slice(commandPrefix.length).trim().split(/ +/);
+  const command = args.shift().toLowerCase();
+
+  if (command === 'qremove') {
+    if (message.author.id !== authorizedUserId) {
+      return;
+    }
+
+    const userIdToRemove = args[0];
+    if (!userIdToRemove) {
+      return message.channel.send('Please provide a user ID to remove from quarantine.');
+    }
+
+    const index = quarantinedUsers.indexOf(userIdToRemove);
+    if (index === -1) {
+      return message.channel.send('This user is not in quarantine.');
+    }
+
+    quarantinedUsers.splice(index, 1);
+    fs.writeFileSync(quarantinedUsersFile, JSON.stringify(quarantinedUsers));
+
+    const guild = message.guild;
+    const member = await guild.members.fetch(userIdToRemove).catch(err => {
+      console.error('Error fetching member:', err);
+      return null;
+    });
+
+    if (member) {
+      const quarantineRole = guild.roles.cache.find(role => role.id === QUARANTINE);
+      const visitorRole = guild.roles.cache.find(role => role.id === VISITOR);
+
+      if (quarantineRole && visitorRole) {
+        try {
+          // Remove the quarantine role and add the visitor role
+          await member.roles.remove(quarantineRole);
+          await member.roles.add(visitorRole);
+          return message.channel.send(`User with ID ${userIdToRemove} has been removed from quarantine and given the visitor role.`);
+        } catch (error) {
+          console.error('Error updating roles for member:', error);
+          return message.channel.send('User removed from quarantine, but there was an error updating roles.');
+        }
+      } else {
+        return message.channel.send('User removed from quarantine, but one or both roles were not found.');
+      }
+    } else {
+      return message.channel.send('User removed from quarantine, but could not fetch member.');
+    }
+  }
+});
+
+//----------Quarantine Check-------//
 
 client.login(process.env["TOKEN"]);
