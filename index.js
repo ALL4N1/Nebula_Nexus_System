@@ -64,6 +64,7 @@ const {
   CLAN_LEADER,
   CLAN_COLEADER,
   CLAN_LIMIT,
+  QUARANTINE,
 } = require("./config.json");
 const { Console } = require("console");
 
