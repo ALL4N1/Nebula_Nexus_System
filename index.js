@@ -123,7 +123,7 @@ const authorizedUserId = '1226908013105909790';
 console.log("Project is running");
 client.once('ready', async () => {
   console.log(`logged in as - ${client.user.username} - `)
-  const guild = client.guilds.cache.get('1228499075570077747');
+  const guild = client.guilds.cache.get('1226979436143050784');
   if (guild) {
     await updateQuarantineStatus(guild);
   }
