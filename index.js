@@ -712,4 +712,4 @@ client.on('messageCreate', async message => {
 
 //----------Quarantine Check-------//
 
-client.login(process.env["TOKEN"]);
+client.login(process.env.TOKEN);
