@@ -113,10 +113,6 @@ async function updateQuarantineStatus(guild) {
   }
 }
 
-// Command prefix and authorized user ID
-const commandPrefix = 'dk';
-const authorizedUserId = '1226908013105909790';
-
 
 //---------------------------------------------//
 
@@ -628,6 +624,10 @@ client.on('guildMemberAdd', async member => {
 //-------------Visitor_Role_Check------------//
 
 //----------Quarantine Check-------//
+
+// Command prefix and authorized user ID
+const commandPrefix = 'dk';
+const authorizedUserId = '1226979436143050784';
 
 // Event listener for when a member leaves the server
 client.on('guildMemberRemove', member => {
