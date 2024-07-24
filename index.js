@@ -25,8 +25,10 @@ const {
   ButtonStyle,
   ModalBuilder,
   TextInputStyle,
+  PermissionsBitField,
   TextInputBuilder,
   GatewayIntentBits,
+  Partials,
 } = require("discord.js");
 const { MessageButton } = require("discord.js");
 const client = new Client({
@@ -36,13 +38,16 @@ const client = new Client({
     GatewayIntentBits.MessageContent,
     GatewayIntentBits.GuildMembers,
     GatewayIntentBits.GuildVoiceStates,
+    GatewayIntentBits.GuildMessageReactions,
+    GatewayIntentBits.DirectMessages,
   ],
+  partials: [Partials.Channel],
 });
 
 const {
   GUILD_ID,
   SUGGESTION,
-  CHANGE,
+  RENAME_ID,
   VERIF_PERMISSION,
   GATE_VISA,
   VOICE_GATES,
@@ -59,22 +64,118 @@ const {
   REPORT_LOGS,
   REPORT_WAIT,
   REPORT_VOICES,
-  STARS,
+  VIP,
   CLAN_LEADER,
   CLAN_COLEADER,
   CLAN_LIMIT,
+  CLAN_MANAGER,
+  TICKET_LOGS,
+  TICKET_CLAN_CATEGORY,
 } = require("./config.json");
 const { Console } = require("console");
+
+const HIGHSTAFF_ROLE_ID = '1264403702945677353';
+const STAFF_ROLE_ID = '1264403712441450666';
+const MEETING_CHANNEL_ID = '1264404000850186362';
+const COMMAND_CHANNEL_ID = '1265678754949369938';
+const LOG_CHANNEL_ID = '1265678272751075348';
+const PERMISSION_ROLE_IDS = ['1264403708431568907', '1264403704220614669', '1264403707114815541', '1264403695844458549'];
 
 //---------------------------------------------//
 
 console.log("Project is running");
-client.on("ready", () =>
-  console.log(`logged in as - ${client.user.username} - `),
-);
+client.once('ready', async () => {
+  console.log(`Logged in as ${client.user.tag}!`);
+
+  const guild = client.guilds.cache.get(GUILD_ID); // Assumes the bot is in one guild
+  const category = guild.channels.cache.get(TICKET_CLAN_CATEGORY);
+  const logChannel = guild.channels.cache.get(TICKET_LOGS);
+
+  if (!category || category.type !== 4) { // 4 is the category type
+    console.log('Category not found or not a category type');
+    return;
+  }
+
+  let updatedChannels = [];
+
+  for (const channel of category.children.cache.values()) {
+    const updatedChannel = await checkAndUpdatePermissions(channel);
+    if (updatedChannel) {
+      updatedChannels.push(updatedChannel);
+    }
+  }
+
+  if (updatedChannels.length > 0) {
+    const embed = {
+      color: 0x0099ff,
+      title: 'Permissions Updated',
+      description: `The following channels have been updated with view permissions for the role: <@&${CLAN_MANAGER}>`,
+      fields: updatedChannels.map(channelName => ({ name: channelName, value: '\u200B' })),
+      timestamp: new Date(),
+      footer: {
+        text: 'Bot Permissions Check',
+      },
+    };
+
+    logChannel.send({ embeds: [embed] });
+  } else {
+    logChannel.send('All channels already have the necessary permissions.');
+  }
+});
+
+// Function to check and update permissions
+const checkAndUpdatePermissions = async (channel) => {
+  const permissions = channel.permissionOverwrites.cache.get(CLAN_MANAGER);
+
+  const requiredPermissions = [
+    PermissionsBitField.Flags.ViewChannel,
+    PermissionsBitField.Flags.Connect,
+    PermissionsBitField.Flags.SendMessages,
+    PermissionsBitField.Flags.ReadMessageHistory,
+    PermissionsBitField.Flags.ManageChannels,
+    PermissionsBitField.Flags.PrioritySpeaker
+  ];
+
+  if (!permissions || !requiredPermissions.every(perm => permissions.allow.has(perm))) {
+    try {
+      await channel.permissionOverwrites.create(CLAN_MANAGER, {
+        ViewChannel: true,
+        Connect: true,
+        SendMessages: true,
+        ReadMessageHistory: true,
+        ManageChannels: true,
+        PrioritySpeaker: true
+      });
+      console.log(`Updated permissions for channel: ${channel.name}`);
+      return channel.name;
+    } catch (error) {
+      console.error(`Failed to update permissions for channel: ${channel.name}`, error);
+    }
+  }
+  return null;
+};
+
+client.on('channelCreate', async (channel) => {
+  if (channel.parentId === TICKET_CLAN_CATEGORY) {
+    const updatedChannel = await checkAndUpdatePermissions(channel);
+    if (updatedChannel) {
+      const logChannel = channel.guild.channels.cache.get(TICKET_LOGS);
+      const embed = {
+        color: 0x0099ff,
+        title: 'New Channel Detected & Permissions Updated',
+        description: `The channel **${channel.name}** has been created and updated with view permissions for the role: <@&${CLAN_MANAGER}>`,
+        timestamp: new Date(),
+        footer: {
+          text: 'Bot Permissions Check',
+        },
+      };
+      logChannel.send({ embeds: [embed] });
+    }
+  }
+});
 
 client.on("messageCreate", async (message) => {
-  
+   
   if (message.author.bot) return;
   
   if (message.content.toLowerCase().includes("slm")) {
@@ -87,10 +188,72 @@ client.on("messageCreate", async (message) => {
     console.log("a7la nass");
   }
 
+    
+    //--- Meeting By Ryu ---/
+    
+    if (message.content === '!dk ready') {
+        message.channel.send('Bot is ready!');
+    }
 
-//----------Change Name-------//
+    if (message.content.startsWith('!dk meeting')) {
+        const guild = client.guilds.cache.get(GUILD_ID);
+        if (!guild) return;
+        if (message.channel.id !== COMMAND_CHANNEL_ID) return;
 
-if (message.channelId === CHANGE) {
+        const meetingChannel = guild.channels.cache.get(MEETING_CHANNEL_ID);
+        if (!meetingChannel || !meetingChannel.isVoice()) return;
+
+        const logChannel = guild.channels.cache.get(LOG_CHANNEL_ID);
+        if (!logChannel) return;
+
+        const hasPermission = PERMISSION_ROLE_IDS.some(roleId => message.member.roles.cache.has(roleId));
+        if (!hasPermission) {
+            message.channel.send('You do not have permission to use this command.');
+            return;
+        }
+
+        let roleId;
+        if (message.content === '!dk meeting highstaff') {
+            roleId = HIGHSTAFF_ROLE_ID;
+        } else if (message.content === '!dk meeting staff') {
+            roleId = STAFF_ROLE_ID;
+        } else {
+            return;
+        }
+
+        const staffRole = guild.roles.cache.get(roleId);
+        if (!staffRole) return;
+
+        const membersWithRole = staffRole.members;
+        let absentMembers = [];
+
+        for (const [memberID, member] of membersWithRole) {
+            if (member.voice.channel) {
+                await member.voice.setChannel(meetingChannel);
+                logChannel.send(`<@${member.id}> was moved to the meeting channel.`);
+                await new Promise(resolve => setTimeout(resolve, 2000)); // Cooldown of 2 seconds
+            } else {
+                absentMembers.push(member);
+                try {
+                    await member.send(`Please join the meeting in the following voice channel: ${meetingChannel.toString()}`);
+                } catch (error) {
+                    console.error(`Could not send DM to ${member.user.tag}`);
+                }
+            }
+        }
+
+        if (absentMembers.length > 0) {
+            let absentMentions = absentMembers.map(member => `<@${member.id}>`).join(', ');
+            message.channel.send(`${absentMentions} did not attend the meeting.`);
+        }
+    }
+    
+    //----Meeting By Ryu --- //
+
+
+//----------RENAME_ID Name-------//
+
+if (message.channelId === RENAME_ID) {
   if (message.content.toLowerCase() === "reset") {
     try {
 
@@ -104,18 +267,18 @@ if (message.channelId === CHANGE) {
       if (clanRole) {
         const [, clanTag] = clanRole;
         await message.member.setNickname(`${clanTag} | ${name}`);
-        console.log("Name Changed with Clan Tag");
+        console.log("Name RENAME_IDd with Clan Tag");
       } else {
-        await message.member.setNickname(null);
-        console.log("Name Changed without tag");
+        await message.member.setNickname(Null);
+        console.log("Name RENAME_IDd without tag");
       }
 
       message.react("✅");
-      console.log("Name Changed");
+      console.log("Name RENAME_IDd");
     } catch (error) {
       console.error(error);
       message.react("❎");
-      console.log("Name Not Changed");
+      console.log("Name Not RENAME_IDd");
     }
   } else {
     try {
@@ -125,23 +288,23 @@ if (message.channelId === CHANGE) {
       if (clanRole) {
         const [, clanTag] = clanRole;
         await message.member.setNickname(`${clanTag} | ${message.content}`);
-        console.log("Name Changed with Clan Tag");
+        console.log("Name RENAME_IDd with Clan Tag");
       } else {
         await message.member.setNickname(`${message.content}`);
-        console.log("Name Changed without tag");
+        console.log("Name RENAME_IDd without tag");
       }
 
       message.react("✅");
     } catch (error) {
       console.error(error);
       message.react("❎");
-      console.log("Name Not Changed");
+      console.log("Name Not RENAME_IDd");
     }
   }
 }
-//----------Change Name-------//
-
-  //----------Clan Add and Kick-------//
+//----------RENAME_ID Name-------//
+    
+    //----------Clan Add and Kick-------//
  if (message.content.startsWith('!dk clanadd')) {
     const target = message.mentions.members.first() || message.guild.members.cache.get(message.content.split(' ')[2]);
 
@@ -221,14 +384,13 @@ if (message.channelId === CHANGE) {
   }
 //----------Clan Add and Kick-------//
 
-
-  //----------Stars-------//
-  if (STARS.includes(message.channel.id)) {
+  //----------VIP_ROLES-------//
+  if (VIP.includes(message.channel.id)) {
     message.react("⭐");
     console.log("Star Has Been Added");
   }
 
-  //----------Stars-------//
+  //----------VIP_ROLES-------//
 
   //----------Suggestion-------//
   if (message.channelId === SUGGESTION) {
@@ -262,7 +424,7 @@ if (message.channelId === CHANGE) {
   //----------Suggestion-------//
 
   //----------Punishments-------//
-  const prefix = "DK";
+  const prefix = "nn!";
   
   if (!message.content.toUpperCase().startsWith(prefix)) return;
 
@@ -333,14 +495,14 @@ const claimCooldowns = new Map();
 const cooldownPeriod = 15 * 60 * 1000; // 15 minutes in milliseconds
 
 // Logging channel ID
-const loggingChannelID = '1250303306337751061';
+const loggingChannelID = REPORT_LOGS;
 
 // Monitored channels
-const monitoredChannels = ["1250199602490118266", "1240095630001700975", "1240095655641350144", "1240095691653775371"];
+const monitoredChannels = [REPORT_WAIT, REPORT_VOICES[0], REPORT_VOICES[1], REPORT_VOICES[2]];
 
 client.on('voiceStateUpdate', async (oldState, newState) => {
-  const waitingRoomID = '1250199602490118266'; // waiting for report vc
-  const staffRoleID = '1236773938076319834'; // report staff role
+  const waitingRoomID = REPORT_WAIT; // waiting for report vc
+  const staffRoleID = REPORT_PERMISSION; // report staff role
 
   // Logging user joins
   async function logUserJoin() {
@@ -368,7 +530,7 @@ client.on('voiceStateUpdate', async (oldState, newState) => {
         return;
       }
 
-      const channel = client.channels.cache.get('1250199005045063771'); // report request text channel
+      const channel = client.channels.cache.get(REPORT_MENTION); // report request text channel
       const staffRole = newState.guild.roles.cache.get(staffRoleID);
       if (!channel || !staffRole) return;
 
@@ -445,7 +607,7 @@ client.on('voiceStateUpdate', async (oldState, newState) => {
 //--------------Temp_VC_Cleanup--------------//
 
 const CATEGORY_ID = '1249197923150069883';
-const WHITELIST = ["1249197926690062391", "1249197931223978035", "1250787368890400828"];
+const WHITELIST = ["1249197931223978035", "1250787368890400828"];
 
 client.once('ready', () => {
   console.log(`Loaded vc!`);
@@ -454,7 +616,7 @@ client.once('ready', () => {
 });
 
 async function checkEmptyVoiceChannels() {
-  const guild = client.guilds.cache.get('1226979436143050784'); // Get the specific guild by its ID
+  const guild = client.guilds.cache.get(GUILD_ID); // Get the specific guild by its ID
   if (!guild) {
     console.log('Guild not found');
     return;
