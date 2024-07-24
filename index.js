@@ -207,7 +207,7 @@ client.on("messageCreate", async (message) => {
         }
 
         const meetingChannel = guild.channels.cache.get(MEETING_CHANNEL_ID);
-        if (!meetingChannel || !meetingChannel.isVoice()) {
+        if (!meetingChannel || meetingChannel.type !== 'GUILD_VOICE') {
             console.error('Meeting channel not found or is not a voice channel');
             return;
         }
