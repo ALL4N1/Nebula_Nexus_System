@@ -462,7 +462,7 @@ client.on('voiceStateUpdate', async (oldState, newState) => {
 
 //--------------Temp_VC_Cleanup--------------//
 
-const CATEGORY_ID = '1264403922571890769';
+const CATEGORY_ID = '1264410664353398826';
 const WHITELIST = ["1264410666715058237", "1264410665309835306"];
 
 client.once('ready', () => {
