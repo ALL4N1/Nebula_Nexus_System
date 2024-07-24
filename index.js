@@ -267,6 +267,8 @@ client.on("messageCreate", async (message) => {
             message.channel.send(`${absentMentions} did not attend the meeting.`);
         }
     }
+});
+
     
     //----Meeting By Ryu --- //
 
