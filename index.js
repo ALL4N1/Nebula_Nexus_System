@@ -191,20 +191,32 @@ client.on("messageCreate", async (message) => {
     
     //--- Meeting By Ryu ---/
     
-    if (message.content === '!ready') {
+   if (message.content === '!ready') {
         message.channel.send('Bot is ready!');
     }
 
     if (message.content.startsWith('!meeting')) {
         const guild = client.guilds.cache.get(GUILD_ID);
-        if (!guild) return;
-        if (message.channel.id !== COMMAND_CHANNEL_ID) return;
+        if (!guild) {
+            console.error('Guild not found');
+            return;
+        }
+        if (message.channel.id !== COMMAND_CHANNEL_ID) {
+            console.log('Command used in the wrong channel');
+            return;
+        }
 
         const meetingChannel = guild.channels.cache.get(MEETING_CHANNEL_ID);
-        if (!meetingChannel || !meetingChannel.isVoice()) return;
+        if (!meetingChannel || !meetingChannel.isVoice()) {
+            console.error('Meeting channel not found or is not a voice channel');
+            return;
+        }
 
         const logChannel = guild.channels.cache.get(LOG_CHANNEL_ID);
-        if (!logChannel) return;
+        if (!logChannel) {
+            console.error('Log channel not found');
+            return;
+        }
 
         const hasPermission = PERMISSION_ROLE_IDS.some(roleId => message.member.roles.cache.has(roleId));
         if (!hasPermission) {
@@ -218,20 +230,28 @@ client.on("messageCreate", async (message) => {
         } else if (message.content === '!meeting staff') {
             roleId = STAFF_ROLE_ID;
         } else {
+            console.log('Invalid meeting type specified');
             return;
         }
 
         const staffRole = guild.roles.cache.get(roleId);
-        if (!staffRole) return;
+        if (!staffRole) {
+            console.error('Staff role not found');
+            return;
+        }
 
         const membersWithRole = staffRole.members;
         let absentMembers = [];
 
         for (const [memberID, member] of membersWithRole) {
             if (member.voice.channel) {
-                await member.voice.setChannel(meetingChannel);
-                logChannel.send(`<@${member.id}> was moved to the meeting channel.`);
-                await new Promise(resolve => setTimeout(resolve, 2000)); // Cooldown of 2 seconds
+                try {
+                    await member.voice.setChannel(meetingChannel);
+                    logChannel.send(`<@${member.id}> was moved to the meeting channel.`);
+                    await new Promise(resolve => setTimeout(resolve, 2000)); // Cooldown of 2 seconds
+                } catch (error) {
+                    console.error(`Error moving member ${member.user.tag}:`, error);
+                }
             } else {
                 absentMembers.push(member);
                 try {
