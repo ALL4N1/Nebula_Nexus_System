@@ -74,13 +74,6 @@ const {
 } = require("./config.json");
 const { Console } = require("console");
 
-const HIGHSTAFF_ROLE_ID = '1264403702945677353';
-const STAFF_ROLE_ID = '1264403712441450666';
-const MEETING_CHANNEL_ID = '1264404000850186362';
-const COMMAND_CHANNEL_ID = '1265678754949369938';
-const LOG_CHANNEL_ID = '1265678272751075348';
-const PERMISSION_ROLE_IDS = ['1264403708431568907', '1264403704220614669', '1264403707114815541', '1264403695844458549'];
-
 //---------------------------------------------//
 
 console.log("Project is running");
@@ -187,88 +180,11 @@ client.on("messageCreate", async (message) => {
     message.reply("3aychou L7ob");
     console.log("a7la nass");
   }
-
-    
-    //--- Meeting By Ryu ---/
-    
+  
    if (message.content === '!ready') {
         message.channel.send('Bot is ready!');
     }
 
-    if (message.content.startsWith('!meeting')) {
-        const guild = client.guilds.cache.get(GUILD_ID);
-        if (!guild) {
-            console.error('Guild not found');
-            return;
-        }
-        if (message.channel.id !== COMMAND_CHANNEL_ID) {
-            console.log('Command used in the wrong channel');
-            return;
-        }
-
-        const meetingChannel = guild.channels.cache.get(MEETING_CHANNEL_ID);
-        if (!meetingChannel || meetingChannel.type !== 'GUILD_VOICE') {
-            console.error('Meeting channel not found or is not a voice channel');
-            return;
-        }
-
-        const logChannel = guild.channels.cache.get(LOG_CHANNEL_ID);
-        if (!logChannel) {
-            console.error('Log channel not found');
-            return;
-        }
-
-        const hasPermission = PERMISSION_ROLE_IDS.some(roleId => message.member.roles.cache.has(roleId));
-        if (!hasPermission) {
-            message.channel.send('You do not have permission to use this command.');
-            return;
-        }
-
-        let roleId;
-        if (message.content === '!meeting highstaff') {
-            roleId = HIGHSTAFF_ROLE_ID;
-        } else if (message.content === '!meeting staff') {
-            roleId = STAFF_ROLE_ID;
-        } else {
-            console.log('Invalid meeting type specified');
-            return;
-        }
-
-        const staffRole = guild.roles.cache.get(roleId);
-        if (!staffRole) {
-            console.error('Staff role not found');
-            return;
-        }
-
-        const membersWithRole = staffRole.members;
-        let absentMembers = [];
-
-        for (const [memberID, member] of membersWithRole) {
-            if (member.voice.channel) {
-                try {
-                    await member.voice.setChannel(meetingChannel);
-                    await logChannel.send(`<@${member.id}> was moved to the meeting channel.`);
-                    await new Promise(resolve => setTimeout(resolve, 2000)); // Cooldown of 2 seconds
-                } catch (error) {
-                    console.error(`Error moving member ${member.user.tag}:`, error);
-                }
-            } else {
-                absentMembers.push(member);
-                try {
-                    await member.send(`Please join the meeting in the following voice channel: ${meetingChannel.toString()}`);
-                } catch (error) {
-                    console.error(`Could not send DM to ${member.user.tag}`);
-                }
-            }
-        }
-
-        if (absentMembers.length > 0) {
-            let absentMentions = absentMembers.map(member => `<@${member.id}>`).join(', ');
-            message.channel.send(`${absentMentions} did not attend the meeting.`);
-        }
-    }
-    
-    //----Meeting By Ryu --- //
 
 
 //----------RENAME_ID Name-------//
