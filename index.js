@@ -191,11 +191,11 @@ client.on("messageCreate", async (message) => {
     
     //--- Meeting By Ryu ---/
     
-    if (message.content === '!dk ready') {
+    if (message.content === '!ready') {
         message.channel.send('Bot is ready!');
     }
 
-    if (message.content.startsWith('!dk meeting')) {
+    if (message.content.startsWith('!meeting')) {
         const guild = client.guilds.cache.get(GUILD_ID);
         if (!guild) return;
         if (message.channel.id !== COMMAND_CHANNEL_ID) return;
@@ -213,9 +213,9 @@ client.on("messageCreate", async (message) => {
         }
 
         let roleId;
-        if (message.content === '!dk meeting highstaff') {
+        if (message.content === '!meeting highstaff') {
             roleId = HIGHSTAFF_ROLE_ID;
-        } else if (message.content === '!dk meeting staff') {
+        } else if (message.content === '!meeting staff') {
             roleId = STAFF_ROLE_ID;
         } else {
             return;
