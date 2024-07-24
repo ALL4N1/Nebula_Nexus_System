@@ -247,7 +247,7 @@ client.on("messageCreate", async (message) => {
             if (member.voice.channel) {
                 try {
                     await member.voice.setChannel(meetingChannel);
-                    logChannel.send(`<@${member.id}> was moved to the meeting channel.`);
+                    await logChannel.send(`<@${member.id}> was moved to the meeting channel.`);
                     await new Promise(resolve => setTimeout(resolve, 2000)); // Cooldown of 2 seconds
                 } catch (error) {
                     console.error(`Error moving member ${member.user.tag}:`, error);
@@ -267,8 +267,6 @@ client.on("messageCreate", async (message) => {
             message.channel.send(`${absentMentions} did not attend the meeting.`);
         }
     }
-});
-
     
     //----Meeting By Ryu --- //
 
